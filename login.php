@@ -1,4 +1,10 @@
 <?php
+  header("Access-Control-Max-Age: 3600");
+  header("Access-Control-Allow-Origin: * ");
+  header("Content-Type: application/json; charset=UTF-8");
+  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+  header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
   require_once('../../Akitokung/00-connection.class.sqli.php');
   
   $json = file_get_contents('php://input');     //  อ่านไฟล์ JSON ที่ทางแอพจะส่งเข้ามา
@@ -8,12 +14,6 @@
 
   // if (isset($_POST['POST'])){ }
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    header("Access-Control-Allow-Origin: * ");
-    header("Content-Type: text/html; charset=UTF-8");
-    header("Access-Control-Allow-Methods: POST");
-    header("Access-Control-Max-Age: 3600");
-    header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
     // ตรวจสอบการส่งข้อมูล Username & Password จาก client
     if (isset($user) AND isset($pass)) {
       // รับข้อมูล Username & Password จาก client
