@@ -1,6 +1,11 @@
 <?php
   require_once('../../Akitokung/00-connection.class.sqli.php');
   
+  $json = file_get_contents('php://input');     //  อ่านไฟล์ JSON ที่ทางแอพจะส่งเข้ามา
+  $inout = json_decode($json, true);              //  แปลงข้อมูลที่อ่านไฟล์ได้จาก JSON เข้า array ของ php
+
+  $user = $inout['Username'];   $pass = $inout['Password'];
+
   // if (isset($_POST['POST'])){ }
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header("Access-Control-Allow-Origin: * ");
@@ -10,10 +15,10 @@
     header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
     // ตรวจสอบการส่งข้อมูล Username & Password จาก client
-    if (isset($_POST['Username']) AND isset($_POST['Password'])) {
+    if (isset($user) AND isset($pass)) {
       // รับข้อมูล Username & Password จาก client
-      $Username = mysqli_real_escape_string($Con_wang,trim($_POST['Username']));
-      $Password = mysqli_real_escape_string($Con_wang,trim($_POST['Password']));
+      $Username = mysqli_real_escape_string($Con_wang,trim($user));
+      $Password = mysqli_real_escape_string($Con_wang,trim($pass));
 
       $sql = "SELECT * FROM `member` WHERE `mem_username`='".$Username."' OR `mem_code`='".$Username."' LIMIT 1";
       $query = mysqli_query($Con_wang,$sql);    $num_rows = mysqli_num_rows($query);
