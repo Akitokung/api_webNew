@@ -15,44 +15,42 @@
       if ($data) {
         //echo $data['mem_code'];
 
-        $sql = "
-          SELECT 
-            COUNT(`spc_procode`) AS List,
-            SUM(`spc_total`) AS Price 
-          FROM 
-            `shopping_cart` 
-          WHERE 
-            `spc_memcode`='".$data['mem_code']."' AND 
-            `spc_amount`!='0'
-        ";
+        $sql = "SELECT `mem_RCoin` FROM `member` WHERE `mem_code`='".$data['mem_code']."'";
         $query = mysqli_query($Con_wang,$sql); 
         if (!$query) {http_response_code(404);}
         else {
-          $num_rows = mysqli_num_rows($query);    $result = mysqli_fetch_array($query);
-          $mem = mysqli_fetch_array(mysqli_query($Con_wang,"
-            SELECT `mem_RCoin` FROM `member` WHERE `mem_code`='".$data['mem_code']."'
-          "));
+          $result = mysqli_fetch_array($query);
 
-          $point_cart = number_format(($result['Price']*0.01)+$mem['mem_RCoin'],0,'.','');
+          $json = array(
+            'save_point' => number_format($result['mem_RCoin'],0,'.',''),
+            'new_point' => array(),
+          );
 
-          $sql = "
+          $all_cart = mysqli_fetch_array(mysqli_query($Con_wang,"
             SELECT 
-              COUNT(`spc_procode`) AS List,
+              SUM(`spc_total`) AS Price 
+            FROM 
+              `shopping_cart` 
+            WHERE 
+              `spc_memcode`='".$data['mem_code']."' AND 
+              `spc_amount`!='0'
+          "));
+          $check_cart = mysqli_fetch_array(mysqli_query($Con_wang,"
+            SELECT 
               SUM(`spc_total`) AS Price 
             FROM 
               `shopping_cart` 
             WHERE 
               `spc_memcode`='".$data['mem_code']."' AND 
               `spc_amount`!='0' AND 
-              `spc_check`
-          ";
+              `spc_check`='1'
+          "));
 
-
-          $json = array(
-            'pointA' => $point_cart,      // สะสม
-            'pointB' => $point_cart,      // สะสม + เลือกในรถเข็น
-            'pointC' => $point_cart,      // สะสม + เลือกในรถเข็น + ไม่เลือกในรถเข็น
+          $new_point = array(
+            'all_cart' => number_format(($all_cart['Price']*0.01),0,'.',''),
+            'check_cart' => number_format(($check_cart['Price']*0.01),0,'.',''),
           );
+          $json['new_point'] = $new_point;
 
           mysqli_close($Con_wang);
           echo json_encode($json);

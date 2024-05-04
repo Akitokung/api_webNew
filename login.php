@@ -8,9 +8,9 @@
   require_once('../../Akitokung/00-connection.class.sqli.php');
   
   $json = file_get_contents('php://input');     //  อ่านไฟล์ JSON ที่ทางแอพจะส่งเข้ามา
-  $inout = json_decode($json, true);              //  แปลงข้อมูลที่อ่านไฟล์ได้จาก JSON เข้า array ของ php
+  $input = json_decode($json, true);              //  แปลงข้อมูลที่อ่านไฟล์ได้จาก JSON เข้า array ของ php
 
-  $user = $inout['Username'];   $pass = $inout['Password'];
+  $user = $input['Username'];   $pass = $input['Password'];
 
   // if (isset($_POST['POST'])){ }
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -44,10 +44,15 @@
             http_response_code(200);  //  response http status = 200 this OK
             $jwt = encode_jwt($result['mem_code']);  // ส่ง token ไปให้ client
             // สร้าง object สำหรับ response JSON 
+            $site = 'https://www.wangpharma.com/';
+            $img = ($result['mem_img1']!='')? $site.'Akitokung/'.$result['mem_img1']:null;
+
             $json = array(
               'status' => true,
               'time' => date('Y-m-d H:i:s'),
               'meassage' => 'success',
+              'name' => $result['mem_name'],
+              'img' => $img,
               'token' => $jwt,
             );
             // response JSON Encode to Client
@@ -60,7 +65,7 @@
               'status' => false,
               'time' => date('Y-m-d H:i:s'),
               'meassage' => 'unauthorized ขออภัยในความไม่สะดวก ชื่อบัญชีผู้ใช้ถูกระงับการใช้งานชั่วคราว',
-              'token' => null,
+              'name' => null,'img' => null,'token' => null,
             );
             // response JSON Encode to Client
             echo json_encode($json);
@@ -70,10 +75,10 @@
         else {
           http_response_code(401);
           $json = array(
-              'status' => false,
-              'time' => date('Y-m-d H:i:s'),
-              'meassage' => 'unauthorized รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ Password แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
-              'token' => null,
+            'status' => false,
+            'time' => date('Y-m-d H:i:s'),
+            'meassage' => 'unauthorized รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ Password แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
+            'name' => null,'img' => null,'token' => null,
           );
           // response JSON Encode to Client
           echo json_encode($json);
@@ -83,10 +88,10 @@
       else {
         http_response_code(401);
         $json = array(
-              'status' => false,
-              'time' => date('Y-m-d H:i:s'),
-              'meassage' => 'unauthorized ไม่พบชื่อบัญชีผู้ใช้ ในระบบกรุณาตรวจสอบ Username แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
-              'token' => null,
+          'status' => false,
+          'time' => date('Y-m-d H:i:s'),
+          'meassage' => 'unauthorized ไม่พบชื่อบัญชีผู้ใช้ ในระบบกรุณาตรวจสอบ Username แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
+          'name' => null,'img' => null,'token' => null,
         );
         // response JSON Encode to Client
         echo json_encode($json);
@@ -96,10 +101,10 @@
     else {
       http_response_code(401);
       $json = array(
-              'status' => false,
-              'time' => date('Y-m-d H:i:s'),
-              'meassage' => 'unauthorized ไม่เข้าใจ หรือ รับค่า POST[.....] จาก Client ไม่ได้',
-              'token' => null,
+        'status' => false,
+        'time' => date('Y-m-d H:i:s'),
+        'meassage' => 'unauthorized ไม่เข้าใจ หรือ รับค่า POST[.....] จาก Client ไม่ได้',
+        'name' => null,'img' => null,'token' => null,
       );
       // response JSON Encode to Client
       echo json_encode($json);
