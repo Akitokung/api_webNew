@@ -19,15 +19,6 @@
       $data = decode_jwt($token);
       if ($data) {
 
-        $sql = "
-          SELECT 
-            * 
-          FROM 
-            `product` 
-          WHERE 
-            `pro_code`='".$pro_code."'
-        ";
-
         $mem = $data['mem_code'];
         $pro = $pro_code;
         $num = 1;
