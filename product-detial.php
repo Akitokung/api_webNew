@@ -1,6 +1,6 @@
 <?php
   header("Access-Control-Max-Age: 3600");
-  header("Access-Control-Allow-Origin: * ");
+  header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json; charset=UTF-8");
   header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
   header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -21,6 +21,7 @@
             `product` AS `a` 
             LEFT JOIN `product_pharma` AS `b` ON `a`.`pro_code`=`b`.`pp_procode`
             LEFT JOIN `supplier` AS `c` ON `a`.`pro_supplier`=`c`.`sp_code`
+            LEFT JOIN `product_drugmode` AS `d` ON `a`.`pro_mode`=`d`.`pd_code`
           WHERE 
             `a`.`pro_show`!='1' AND 
             `a`.`pro_code`='".$_GET['pcode']."'
@@ -50,6 +51,7 @@
           $pro_nameMain = ($result['pro_nameMain']!='')? $result['pro_nameMain']:$result['pro_nameTH'];
           $pro_nameMain = ($pro_nameMain!='')? $pro_nameMain:$result['pro_name'];
           $pro_instock = ($result['pro_instock']!=0)? 'มี':'หมด';
+          $pro_instock = (int)999;
 
           // $pro_instock = 'มี';
 
@@ -115,7 +117,7 @@
               member AS `a`
               LEFT JOIN `logistic_transportation` AS `b` ON `a`.`mem_route`=`b`.`ltr_mscode` 
             WHERE 
-              `b`.`a`.`mem_code`='".$data['mem_code']."' AND 
+              `a`.`mem_code`='".$data['mem_code']."' AND 
               `b`.`ltr_date`>'".date('Y-m-d')."'
             ORDER BY 
               `b`.`ltr_date`
@@ -138,6 +140,7 @@
             'pro_nameEng' => $result['pro_nameEng'],        // ชื่อภาษาอังกฤษ
             'pro_barcode' => $pro_barcode,                  // บาร์โค๊ด 1 , 2 , 3 
             'pro_unit1' => $result['pro_unit1'],            // หน่วยที่ 1
+            'pro_mode' => $result['pd_name'],
             'pro_priceU1' => $pro_priceU1,                  // ราคา / หน่วยที่ 1
 
             'pro_unit2' => $result['pro_unit2'],            // หน่วยที่ 2
@@ -161,6 +164,7 @@
             'flastsale_end' => $flashsale_end,
 
             'Price_Tag' => $Price_Tag,                      // ราคาป้าย = ราคาที่พิมพ์ติดอยู่บนตัวสินค้า
+            'variants' => array(),
             'pro_instock' => $pro_instock,                  // สถานะคงคลัง มี หรือ หมด สำหรับเงื่อนไขการเพิ่มใส่รถเข็น
             /*
             'pro_img' => $pro_img,                          // รูปหลักสินค้า
@@ -224,6 +228,58 @@
             $payload['pro_img'][$img] = $value;
             $ig++;
           }
+
+          $radio1 = $result['pro_ratio1']/$result['pro_ratio1'];
+          $radio2 = $result['pro_ratio1']/$result['pro_ratio2'];
+          $radio3 = $result['pro_ratio1']/$result['pro_ratio3'];
+
+            if ($result['pro_unit1']!='') {
+              $pro_before = $radio1*$result['pro_priceC'];
+              $pro_after = $radio1*$result['pro_priceA'];
+
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit1'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+            if ($result['pro_unit2']!='') {
+              $pro_before = $radio2*$result['pro_priceC'];
+              $pro_after = $radio2*$result['pro_priceA'];
+
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit2'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+            if ($result['pro_unit3']!='') {
+              $pro_before = $radio3*$result['pro_priceC'];
+              $pro_after = $radio3*$result['pro_priceA'];
+              
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit3'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+
+          // $payload_2 = array(
+          //   'pro_unit1' => $result['pro_unit1'],
+          //   'pro_unit2' => $result['pro_unit2'],
+          //   'pro_unit3' => $result['pro_unit3'],
+          // );
+          // array_push($payload['variants'],$payload_2);
+
         array_push($json,$payload);
           
         mysqli_close($Con_wang);

@@ -1,6 +1,6 @@
 <?php
   header("Access-Control-Max-Age: 3600");
-  header("Access-Control-Allow-Origin: * ");
+  header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json; charset=UTF-8");
   header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
   header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -21,6 +21,7 @@
           FROM 
             `shopping_cart` AS `a`
             LEFT JOIN `product` AS `b` ON `a`.`spc_procode`=`b`.`pro_code`
+            LEFT JOIN `product_drugmode` AS c ON `b`.`pro_mode`=c.`pd_code`
           WHERE 
             `a`.`spc_memcode`='".$spc_memcode."'
           ORDER BY 
@@ -47,7 +48,7 @@
             $pro_nameMain = ($result['pro_nameMain']!='')? $result['pro_nameMain']:$result['pro_nameTH'];
             $pro_nameMain = ($pro_nameMain!='')? $pro_nameMain:$result['pro_name'];
             $pro_instock = ($result['pro_instock']>=$result['pro_limitA'])? 'มี':'หมด';
-
+            $pro_instock = (int)999;
             // $pro_instock = 'มี';
 
             $pro_img = str_replace('../',$site,$result['pro_img']);
@@ -96,11 +97,67 @@
               'pro_imgU2' => $pro_imgU2,                      // รูปสินค้าหน่วยที่ 2
               'pro_imgU3' => $pro_imgU3,                      // รูปสินค้าหน่วยที่ 3
 
+              'Price_Tag' => $Price_Tag,
+              'variants' => array(),
+              'pro_mode' => $result['pd_name'],
+              'pro_details' => $result['pro_details'],
+              
               'promotion' => $promotion,
               'flashsale_end' => $flashsale_end,
               'pro_limitA' => $pro_limitA,
               'pro_limitU' => $pro_limitU,
             );
+
+          $radio1 = $result['pro_ratio1']/$result['pro_ratio1'];
+          $radio2 = $result['pro_ratio1']/$result['pro_ratio2'];
+          $radio3 = $result['pro_ratio1']/$result['pro_ratio3'];
+
+            if ($result['pro_unit1']!='') {
+              $pro_before = $radio1*$result['pro_priceC'];
+              $pro_after = $radio1*$result['pro_priceA'];
+
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit1'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+            if ($result['pro_unit2']!='') {
+              $pro_before = $radio2*$result['pro_priceC'];
+              $pro_after = $radio2*$result['pro_priceA'];
+
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit2'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+            if ($result['pro_unit3']!='') {
+              $pro_before = $radio3*$result['pro_priceC'];
+              $pro_after = $radio3*$result['pro_priceA'];
+              
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit3'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+
+            // $payload_2 = array(
+            //   'pro_unit1' => $result['pro_unit1'],
+            //   'pro_unit2' => $result['pro_unit2'],
+            //   'pro_unit3' => $result['pro_unit3'],
+            // );
+            // array_push($payload['variants'],$payload_2);
             array_push($json,$payload);
           }
           mysqli_close($Con_wang);

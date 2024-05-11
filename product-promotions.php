@@ -1,6 +1,6 @@
 <?php
   header("Access-Control-Max-Age: 3600");
-  header("Access-Control-Allow-Origin: * ");
+  header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json; charset=UTF-8");
   header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
   header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -24,6 +24,7 @@
           FROM 
             `product` AS `a` 
             LEFT JOIN `product_promotion` AS `b` ON `a`.`pro_code`=`b`.`pmo_procode`
+            LEFT JOIN `product_drugmode` AS `c` ON `a`.`pro_mode`=`c`.`pd_code`
           WHERE 
             `a`.`pro_show`!='1' AND 
             `a`.`pro_img`!='' AND 
@@ -49,6 +50,7 @@
           $pro_nameMain = ($result['pro_nameMain']!='')? $result['pro_nameMain']:$result['pro_nameTH'];
           $pro_nameMain = ($pro_nameMain!='')? $pro_nameMain:$result['pro_name'];
           $pro_instock = ($result['pro_instock']>=$result['pro_limitA'])? 'มี':'หมด';
+          $pro_instock = (int)999;
 
           // $pro_instock = 'มี';
 
@@ -70,6 +72,8 @@
           $pro_limitA = ($result['pro_limitA']!=0)? $result['pro_limitA']:'1.00';
           $pro_limitU = ($result['pro_limitA']!=0)? $result['pro_unit1']:null;
 
+          $Price_Tag = number_format($result['pro_priceTag'],2,'.','');
+          
           $payload = array(
             'pro_code' => $result['pro_code'],              // รหัสสินค้า
             'pro_nameMain' => $pro_nameMain,                // ชื่อภาษาไทย
@@ -83,15 +87,70 @@
             'Price_save' => $Price_save,                    // ราคาที่ประหยัดได้
             'Percent_save' => $Percent_save,                // เปอร์เซ็น ( % ) ที่ประหยัดได้
             'pro_instock' => $pro_instock,                  // สถานะคงคลัง มี หรือ หมด สำหรับเงื่อนไขการเพิ่มใส่รถเข็น
+            'pro_details' => $result['pro_details'],
 
             'pro_limitA' => $pro_limitA,          // จำนวนขั้นต่ำในการสั่งในราคาโปรมั่งชั้น ( สั่งต่ำกว่าได้ แต่จะไม่ได้ราคาโปรโมชั่น )
             'pro_limitU' => $pro_limitU,          // จำนวนขั้นต่ำในการสั่งในราคาโปรมั่งชั้น ( สั่งต่ำกว่าได้ แต่จะไม่ได้ราคาโปรโมชั่น )
-
+            'pro_mode' => $result['pd_name'],
+            'variants' => array(),
+            'Price_Tag' => $Price_Tag, 
             'pro_img' => $pro_img,                          // รูปหลักสินค้า
             'pmo_sumsale' => $pmo_sumsale,                  // ขายแล้วกว่า ++
             'isPromotion' => $isPromotion,
             'flashsale_end' => $flashsale_end
           );
+
+          $radio1 = $result['pro_ratio1']/$result['pro_ratio1'];
+          $radio2 = $result['pro_ratio1']/$result['pro_ratio2'];
+          $radio3 = $result['pro_ratio1']/$result['pro_ratio3'];
+
+            if ($result['pro_unit1']!='') {
+              $pro_before = $radio1*$result['pro_priceC'];
+              $pro_after = $radio1*$result['pro_priceA'];
+
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit1'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+            if ($result['pro_unit2']!='') {
+              $pro_before = $radio2*$result['pro_priceC'];
+              $pro_after = $radio2*$result['pro_priceA'];
+
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit2'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+            if ($result['pro_unit3']!='') {
+              $pro_before = $radio3*$result['pro_priceC'];
+              $pro_after = $radio3*$result['pro_priceA'];
+              
+              $payload_2 = array(
+                'pro_unit' => $result['pro_unit3'],
+                'Price_Tag' => $Price_Tag,
+                'pro_before' => number_format($pro_before,2,'.',','),
+                'pro_after' => number_format($pro_after,2,'.',','),
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+
+          // $payload_2 = array(
+          //   'pro_unit1' => $result['pro_unit1'],
+          //   'pro_unit2' => $result['pro_unit2'],
+          //   'pro_unit3' => $result['pro_unit3'],
+          // );
+          // array_push($payload['variants'],$payload_2);
+
           array_push($json,$payload);
         }
         mysqli_close($Con_wang);
