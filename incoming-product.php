@@ -67,8 +67,8 @@
             ".$start." , ".$end."
           ";
         }
-
-        $site = 'https://www.wangpharma.com/';
+        $query = mysqli_query($Con_pharSYS,$sql);
+        if (!$query) {http_response_code(404);}
         while($result = mysqli_fetch_array($query,MYSQLI_ASSOC)) {
           $pro = mysqli_fetch_array(mysqli_query($Con_wang,"
             SELECT 
@@ -83,7 +83,6 @@
             WHERE 
               `b`.`pro_code`='".$result['pcode']."'
           "));
-
 
           if ($mem['mem_price']=='A') {$price = number_format($pro['p_a'],2,'.','');}
           else if ($mem['mem_price']=='B') {$price = number_format($pro['p_b'],2,'.','');}
