@@ -18,7 +18,7 @@
         $end = ($_GET['end']!='')? $_GET['end']:'10';
         
         $mem = mysqli_fetch_array(mysqli_query($Con_wang,"SELECT * FROM `member` WHERE `mem_code`='".$data['mem_code']."'"));
-        
+
         $sql = "
           SELECT 
             `a`.`bsl_procode` AS `List`,
@@ -110,8 +110,8 @@
                 "en" => $pro['pd_name_Eng'], 
               ),
             ),
-            "stock" => $quantity,
-            "isCombination" => false,
+            "stock" => ($quantity>1)? 999:0,
+            "isCombination" => true,
             "createdAt" => $pro['pro_dateadd'], 
             "updatedAt" => date('Y-m-d'), 
             "sales" => 0,
