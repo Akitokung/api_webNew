@@ -99,7 +99,8 @@
           $slug = ($pro['pro_gs3']!=0)? 'โปรโมชั่น ฯ':'';
 
           $quantity = (int)$pro['pro_instock'];
-
+          $quantity = ($quantity>1)? 999:0;
+          
           $payload = array(
             "prices" => array(
               "price" => (float)$price,
@@ -132,7 +133,7 @@
                 "en" => $pro['pd_name_Eng'], 
               ),
             ),
-            "stock" => ($quantity>1)? 999:0,
+            "stock" => $quantity,
             "isCombination" => true,
             "createdAt" => $pro['pro_dateadd'], 
             "updatedAt" => date('Y-m-d'), 
@@ -198,10 +199,11 @@
                 'quantity' => (float)$quantity/$radio1,
 
                 'discount' => (float)$radio1*$discount,
-                'productId' => $pro['pro_id'],
+                'productId' => $pro['pro_id'].'-0',
                 'barcode' => $pro['pro_barcode1'],
-                'sku' => $pro['pro_unit1'],
-                'image' => $pro_imgU1
+                'sku' => null,
+                'unit' => $pro['pro_unit1'],
+                'image' => ($pro_imgU1!='')? $pro_imgU1:$pro_img
               );
               array_push($payload['variants'],$payload_2);
             }
@@ -215,13 +217,14 @@
 
                 'originalPrice' => (float)number_format($pro_before,2,'.',''),
                 'price' => (float)number_format($radio2*$price,2,'.',''),
-                'quantity' => (float)$quantity/$radio2,
+                'quantity' => (float)$quantity/$radio1,
 
                 'discount' => (float)$radio2*$discount,
-                'productId' => $pro['pro_id'],
+                'productId' => $pro['pro_id'].'-1',
                 'barcode' => $pro['pro_barcode2'],
-                'sku' => $pro['pro_unit2'],
-                'image' => $pro_imgU2
+                'sku' => null,
+                'unit' => $pro['pro_unit2'],
+                'image' => ($pro_imgU2!='')? $pro_imgU2:$pro_img
               );
               array_push($payload['variants'],$payload_2);
             }
@@ -234,13 +237,14 @@
 
                 'originalPrice' => (float)number_format($pro_before,2,'.',''),
                 'price' => (float)number_format($radio3*$price,2,'.',''),
-                'quantity' => (float)$quantity/$radio3,
+                'quantity' => (float)$quantity/$radio1,
 
                 'discount' => (float)$radio3*$discount,
-                'productId' => $pro['pro_id'],
+                'productId' => $pro['pro_id'].'-2',
                 'barcode' => $pro['pro_barcode3'],
-                'sku' => $pro['pro_unit3'],
-                'image' => $pro_imgU3
+                'sku' => null,
+                'unit' => $pro['pro_unit3'],
+                'image' => ($pro_imgU3!='')? $pro_imgU3:$pro_img
               );
               array_push($payload['variants'],$payload_2);
             }
