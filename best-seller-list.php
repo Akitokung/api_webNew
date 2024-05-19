@@ -86,6 +86,7 @@
               "discount" =>  (float)$discount,
             ),
             "categories" => array(),
+            
             "image" => array(),
             "tag" => array(),
             "variants" => array(),
