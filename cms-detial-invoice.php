@@ -110,9 +110,9 @@
               $image = ($ric['pro_img']!='')? str_replace('../',$site,$ric['pro_img']):null;
 
               $sku = '';    $barcode = '';
-              if ($ric['spo_unit']==1) {$sku = $ric['pro_unit1']; $barcode = $ric['pro_unit1'];}
-              else if ($ric['spo_unit']==2) {$sku = $ric['pro_unit2']; $barcode = $ric['pro_unit2'];}
-              else if ($ric['spo_unit']==3) {$sku = $ric['pro_unit3']; $barcode = $ric['pro_unit3'];}
+              if ($ric['spo_unit']==1) {$sku = $ric['pro_unit1']; $barcode = $ric['pro_barcode1'];}
+              else if ($ric['spo_unit']==2) {$sku = $ric['pro_unit2']; $barcode = $ric['pro_barcode2'];}
+              else if ($ric['spo_unit']==3) {$sku = $ric['pro_unit3']; $barcode = $ric['pro_barcode3'];}
 
               $description_th = str_replace($bad,'',strip_tags($ric['pro_details']));
               $title_th = ($ric['pro_nameMain']!='')? $ric['pro_nameMain']:$ric['pro_nameTH'];

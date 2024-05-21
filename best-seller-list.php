@@ -86,10 +86,6 @@
               "discount" =>  (float)$discount,
             ),
             "categories" => array(),
-<<<<<<< HEAD
-=======
-            
->>>>>>> 1a99fa5f3897235fb22e75b4ea2df01865759c4a
             "image" => array(),
             "tag" => array(),
             "variants" => array(),
