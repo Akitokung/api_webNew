@@ -1,11 +1,15 @@
 <?php
+  header("Access-Control-Max-Age: 3600");
+  header("Access-Control-Allow-Origin: *");
+  header("Content-Type: application/json; charset=UTF-8");
+  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+  header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
   require_once('../../Akitokung/00-connection.class.sqli.php');
 
   if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $token = getBearerToken();
     if (!empty($token)) {
-      // header("Content-Type: text/html; charset=UTF-8");
-      header("Content-Type: application/json; charset=UTF-8");
       $key = "Akitokung";
       //สร้าง object ข้อมูลสำหรับทำ json
       $payload = array();

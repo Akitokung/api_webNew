@@ -20,18 +20,7 @@
       $Username = mysqli_real_escape_string($Con_wang,trim($user));
       $Password = mysqli_real_escape_string($Con_wang,trim($pass));
 
-      $sql = "
-        SELECT 
-          * 
-        FROM 
-          `member` AS `a` 
-          LEFT JOIN `member_phone` AS `b` ON `a`.`mem_code`=`b`.`mn_memcode`
-        WHERE 
-          `a`.`mem_username`='".$Username."'
-        LIMIT 
-          1
-      ";
-
+      $sql = "SELECT * FROM `member` WHERE `mem_username`='".$Username."' OR `mem_code`='".$Username."' LIMIT 1";
       $query = mysqli_query($Con_wang,$sql);    $num_rows = mysqli_num_rows($query);
       // พบ ข้อมูลที่ตรงกัน ใน Databases
       if ($num_rows != 0) {
@@ -58,29 +47,13 @@
             $site = 'https://www.wangpharma.com/';
             $img = ($result['mem_img1']!='')? $site.'Akitokung/'.$result['mem_img1']:null;
 
-            $mem_address = ($result['mem_address']!='')? 'เลขที่ '.trim($result['mem_address']).' ':null;
-            $mem_village = ($result['mem_village']!='')? 'หมู่ที่ '.trim($result['mem_village']).' ':null;
-            $mem_alley = ($result['mem_alley']!='')? 'ซอย'.trim($result['mem_alley']).' ':null;
-            $mem_road = ($result['mem_road']!='')? 'ถนน'.trim($result['mem_road']).' ':null;
-            $mem_tumbon = ($result['mem_tumbon']!='')? 'ตำบล'.trim($result['mem_tumbon']).' ':null;
-            $mem_amphur = ($result['mem_amphur']!='')? 'อำเภอ'.trim($result['mem_amphur']).' ':null;
-            $mem_province = ($result['mem_province']!='')? 'จังหวัด'.trim($result['mem_province']).' ':null;
-            $mem_post = ($result['mem_post']!='')? 'รหัสไปรษณีย์ '.trim($result['mem_post']):null;
-
-            $address = $mem_address.$mem_village.$mem_alley.$mem_road.$mem_tumbon.$mem_amphur.$mem_province.$mem_post;
-
             $json = array(
-              'token' => $jwt,
-              '_id' => $result['mem_code'],
-              'name' => $result['mem_name'],
-              'email' => $result['mn_emailshop'],
-              'address' => $address,
-              'phone' => $result['mem_name'],
-
-              'img' => $img,
               'status' => true,
-              'meassage' => 'success',
               'time' => date('Y-m-d H:i:s'),
+              'meassage' => 'success',
+              'name' => $result['mem_name'],
+              'img' => $img,
+              'token' => $jwt,
             );
             // response JSON Encode to Client
             echo json_encode($json);
@@ -89,17 +62,10 @@
           else {
             http_response_code(401);
             $json = array(
-              'token' => null,
-              '_id' => null,
-              'name' => null,
-              'email' => null,
-              'address' => null,
-              'phone' => null,
-
-              'img' => null,
               'status' => false,
-              'meassage' => 'unauthorized ขออภัยในความไม่สะดวก ชื่อบัญชีผู้ใช้ถูกระงับการใช้งานชั่วคราว',
               'time' => date('Y-m-d H:i:s'),
+              'meassage' => 'unauthorized ขออภัยในความไม่สะดวก ชื่อบัญชีผู้ใช้ถูกระงับการใช้งานชั่วคราว',
+              'name' => null,'img' => null,'token' => null,
             );
             // response JSON Encode to Client
             echo json_encode($json);
@@ -109,17 +75,10 @@
         else {
           http_response_code(401);
           $json = array(
-              'token' => null,
-              '_id' => null,
-              'name' => null,
-              'email' => null,
-              'address' => null,
-              'phone' => null,
-
-              'img' => null,
-              'status' => false,
-              'meassage' => 'unauthorized รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ Password แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
-              'time' => date('Y-m-d H:i:s'),
+            'status' => false,
+            'time' => date('Y-m-d H:i:s'),
+            'meassage' => 'unauthorized รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบ Password แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
+            'name' => null,'img' => null,'token' => null,
           );
           // response JSON Encode to Client
           echo json_encode($json);
@@ -129,17 +88,10 @@
       else {
         http_response_code(401);
         $json = array(
-              'token' => null,
-              '_id' => null,
-              'name' => null,
-              'email' => null,
-              'address' => null,
-              'phone' => null,
-
-              'img' => null,
-              'status' => false,
-              'meassage' => 'unauthorized ไม่พบชื่อบัญชีผู้ใช้ ในระบบกรุณาตรวจสอบ Username แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
-              'time' => date('Y-m-d H:i:s'),
+          'status' => false,
+          'time' => date('Y-m-d H:i:s'),
+          'meassage' => 'unauthorized ไม่พบชื่อบัญชีผู้ใช้ ในระบบกรุณาตรวจสอบ Username แล้วลองใหม่อีกครั้งในภายหลัง ขอบคุณครับ/ค่ะ',
+          'name' => null,'img' => null,'token' => null,
         );
         // response JSON Encode to Client
         echo json_encode($json);
@@ -149,17 +101,10 @@
     else {
       http_response_code(401);
       $json = array(
-              'token' => null,
-              '_id' => null,
-              'name' => null,
-              'email' => null,
-              'address' => null,
-              'phone' => null,
-
-              'img' => null,
-              'status' => false,
-              'meassage' => 'unauthorized ไม่เข้าใจ หรือ รับค่า POST[.....] จาก Client ไม่ได้',
-              'time' => date('Y-m-d H:i:s'),
+        'status' => false,
+        'time' => date('Y-m-d H:i:s'),
+        'meassage' => 'unauthorized ไม่เข้าใจ หรือ รับค่า POST[.....] จาก Client ไม่ได้',
+        'name' => null,'img' => null,'token' => null,
       );
       // response JSON Encode to Client
       echo json_encode($json);
