@@ -23,9 +23,11 @@
             LEFT JOIN `shopping_order` AS `b` ON `a`.`soh_runing`=`b`.`spo_runing`
             LEFT JOIN `product` AS `c` ON `b`.`spo_procode`=`c`.`pro_code`
           WHERE 
-            `a`.`soh_id`='".$_GET['id']."'
+            `a`.`soh_runing`='".$_GET['id']."'
         ";
 
+        // `a`.`soh_id`='".$_GET['id']."'
+        
         $query = mysqli_query($Con_wang,$sql);      $num_rows = mysqli_num_rows($query);
         if (!$query) {http_response_code(404);}
         $site = 'https://www.wangpharma.com/';
@@ -119,7 +121,7 @@
               $title_th = ($title_th!='')? $title_th:$ric['pro_name'];
               $slug = ($ric['pro_gs3']!=0)? 'โปรโมชั่น ฯ':'';
 
-              $quantity = (int)$pro['pro_instock'];
+              $quantity = (int)$ric['pro_instock'];
               $quantity = ($quantity>1)? 999:0;
 
               $cart = array(
