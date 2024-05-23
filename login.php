@@ -2,7 +2,7 @@
   header("Access-Control-Max-Age: 3600");
   header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json; charset=UTF-8");
-  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
   header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
   require_once('../../Akitokung/00-connection.class.sqli.php');
@@ -73,9 +73,10 @@
               'token' => $jwt,
               '_id' => $result['mem_code'],
               'name' => $result['mem_name'],
+              'contact' => $result['mn_phoneshop'],
               'email' => $result['mn_emailshop'],
               'address' => $address,
-              'phone' => $result['mem_name'],
+              'phone' => $result['mn_phoneshop'],
 
               'img' => $img,
               'status' => true,
@@ -92,6 +93,7 @@
               'token' => null,
               '_id' => null,
               'name' => null,
+              'contact' => null,
               'email' => null,
               'address' => null,
               'phone' => null,
@@ -112,6 +114,7 @@
               'token' => null,
               '_id' => null,
               'name' => null,
+              'contact' => null,
               'email' => null,
               'address' => null,
               'phone' => null,
@@ -132,6 +135,7 @@
               'token' => null,
               '_id' => null,
               'name' => null,
+              'contact' => null,
               'email' => null,
               'address' => null,
               'phone' => null,
@@ -152,6 +156,7 @@
               'token' => null,
               '_id' => null,
               'name' => null,
+              'contact' => null,
               'email' => null,
               'address' => null,
               'phone' => null,

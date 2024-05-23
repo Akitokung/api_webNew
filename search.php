@@ -2,7 +2,7 @@
   header("Access-Control-Max-Age: 3600");
   header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json; charset=UTF-8");
-  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
   header("Access-Control-Allow-Headers: Content-Type, Authorization");
   
   require_once('../../Akitokung/00-connection.class.sqli.php');
@@ -93,7 +93,12 @@
 
           $quantity = (int)$pro['pro_instock'];
           $quantity = ($quantity>1)? 999:0;
-          
+
+          $pro_img = str_replace('../',$site,$pro['pro_img']);
+          $pro_imgU1 = str_replace('../',$site,$pro['pro_imgU1']);
+          $pro_imgU2 = str_replace('../',$site,$pro['pro_imgU2']);
+          $pro_imgU3 = str_replace('../',$site,$pro['pro_imgU3']);
+
           $prices = array(
             'price' => 450,
             'originalPrice' => 450,
