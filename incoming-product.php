@@ -2,7 +2,7 @@
   header("Access-Control-Max-Age: 3600");
   header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json; charset=UTF-8");
-  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
   header("Access-Control-Allow-Headers: Content-Type, Authorization");
   
   require_once('../../Akitokung/00-connection.class.sqli.php');
@@ -152,12 +152,8 @@
           if ($pro['pro_glwa10']!=0) {$payload['categories'][] = 'เวชสำอาง';}
 
           $pro_img = str_replace('../',$site,$pro['pro_img']);
-          if ($pro['pro_img']!='') {
-            $payload['image'][] = $pro_img;
-          }
-          else {
-            $pro_img = '';
-          }
+          if ($pro['pro_img']!='') {$payload['image'][] = $pro_img;}
+          else {$pro_img = '';}
 
           $pro_imgU1 = str_replace('../',$site,$pro['pro_imgU1']);
           if ($pro['pro_imgU1']!='') {$payload['image'][] = $pro_imgU1;}
@@ -194,7 +190,7 @@
                 'view' => (int)$pro['pro_view'],
                 'rating' => (float)number_format($pro['pro_rating'],2,'.',''),
 
-                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'originalPrice' => (float)number_format($originalPrice,2,'.',''),
                 'price' => (float)number_format($radio1*$price,2,'.',''),
                 'quantity' => (float)$quantity/$radio1,
 
@@ -215,7 +211,7 @@
                 'view' => (int)$pro['pro_view'],
                 'rating' => (float)number_format($pro['pro_rating'],2,'.',''),
 
-                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'originalPrice' => (float)number_format($originalPrice,2,'.',''),
                 'price' => (float)number_format($radio2*$price,2,'.',''),
                 'quantity' => (float)$quantity/$radio1,
 
@@ -235,7 +231,7 @@
                 'view' => (int)$pro['pro_view'],
                 'rating' => (float)number_format($pro['pro_rating'],2,'.',''),
 
-                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'originalPrice' => (float)number_format($originalPrice,2,'.',''),
                 'price' => (float)number_format($radio3*$price,2,'.',''),
                 'quantity' => (float)$quantity/$radio1,
 

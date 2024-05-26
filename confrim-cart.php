@@ -3,7 +3,7 @@
   header("Access-Control-Allow-Origin: *");
   header("Content-Type: application/json; charset=UTF-8");
   // header("Content-Type: text/html; charset=UTF-8");
-  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+  header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
   header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
   require_once('../../Akitokung/00-connection.class.sqli.php');
@@ -17,6 +17,7 @@
         $arr = json_decode($json, true);              //  แปลงข้อมูลที่อ่านไฟล์ได้จาก JSON เข้า array ของ php
         // echo count($arr);
         // print_r($arr);
+        $site = 'https://www.wangpharma.com/'; 
 
         $id_ordermain = mysqli_fetch_array(mysqli_query($Con_wang,"
           SELECT MAX(`soh_id`) AS id FROM `shopping_orderHead` WHERE 1
@@ -153,10 +154,10 @@
         $jsonx = array(
           'cart' => array(),
           'discount' => 0,
-          '_id' => $spo_runing,
+          '_id' => (int)$last_id,
           'user_info' => array(),
           'shippingOption' => $lg['lst_type'],    // บริษัท ขนส่งที่เลือก Flash | POST | BEST | DHL | Wang
-          'paymentMethod' => $soh_payment[($pay!='')? $pay:1],
+          'paymentMethod' => 'Cash',
           'status' => 'Delivered',        // สถานะขนส่ง
           'subTotal' => (int)number_format($soh_listsale+$soh_listfree,2,'.',''),            // มูลค่าสินค้า
           'shippingCost' => (float)number_format($lg['lst_price'],2,'.',''),
@@ -164,7 +165,7 @@
           'user' => $mem_RCoin['mem_code'],
           'createdAt' => $spo_Cdatetime,
           'updatedAt' => $spo_Cdatetime,
-          'invoice' => (int)$last_id,
+          'invoice' => $spo_runing,
           '__v' => 0,
         );
 
@@ -256,6 +257,82 @@
               }
               $tag_ms .= ']';
               $cart['tag'][] = (COUNT($tag_x)==0)? '':$tag_ms;          
+
+          //     $quantity = (int)$ric['pro_instock'];      'variants' => array(),
+          //     $quantity = ($quantity>1)? 999:0;
+
+          // if ($mem_RCoin['mem_price']=='A') {$price = number_format($ric['p_a'],2,'.','');}
+          // else if ($mem_RCoin['mem_price']=='B') {$price = number_format($ric['p_b'],2,'.','');}
+          // else if ($mem_RCoin['mem_price']=='C') {$price = number_format($ric['p_c'],2,'.','');}
+          // $originalPrice = ($ric['p_tag']!=0)? number_format($ric['p_tag'],2,'.',''):number_format($ric['p_c'],2,'.','');
+          // $discount = $originalPrice-$price;
+
+          // $radio1 = $ric['pro_ratio1']/$ric['pro_ratio1'];
+          // $radio2 = $ric['pro_ratio1']/$ric['pro_ratio2'];
+          // $radio3 = $ric['pro_ratio1']/$ric['pro_ratio3'];
+
+          // $pro_img = str_replace('../',$site,$ric['pro_img']);
+          // $pro_imgU1 = str_replace('../',$site,$ric['pro_imgU1']);
+          // $pro_imgU2 = str_replace('../',$site,$ric['pro_imgU2']);
+          // $pro_imgU3 = str_replace('../',$site,$ric['pro_imgU3']);
+
+          //     if ($ric['spo_unit']=='1') {
+          //       $payload_2 = array(
+          //         'register' => $ric['pro_drugregister'],
+          //         'view' => (int)$ric['pro_view'],
+          //         'rating' => (float)number_format($ric['pro_rating'],2,'.',''),
+
+          //         'originalPrice' => (float)number_format($originalPrice,2,'.',''),
+          //         'price' => (float)number_format($radio1*$price,2,'.',''),
+          //         'quantity' => (float)$quantity/$radio1,
+
+          //         'discount' => (float)$radio1*$discount,
+          //         'productId' => $ric['pro_id'].'-0',
+          //         'barcode' => $ric['pro_barcode1'],
+          //         'sku' => null,
+          //         'unit' => $ric['pro_unit1'],
+          //         'image' => ($pro_imgU1!='')? $pro_imgU1:$pro_img
+          //       );
+          //       array_push($cart['variants'],$payload_2);
+          //     }
+          //     if ($ric['spo_unit']=='2') {
+          //       $payload_2 = array(
+          //         'register' => $ric['pro_drugregister'],
+          //         'view' => (int)$ric['pro_view'],
+          //         'rating' => (float)number_format($ric['pro_rating'],2,'.',''),
+
+          //         'originalPrice' => (float)number_format($originalPrice,2,'.',''),
+          //         'price' => (float)number_format($radio2*$price,2,'.',''),
+          //         'quantity' => (float)$quantity/$radio2,
+
+          //         'discount' => (float)$radio2*$discount,
+          //         'productId' => $ric['pro_id'].'-0',
+          //         'barcode' => $ric['pro_barcode1'],
+          //         'sku' => null,
+          //         'unit' => $ric['pro_unit2'],
+          //         'image' => ($pro_imgU2!='')? $pro_imgU2:$pro_img
+          //       );
+          //       array_push($cart['variants'],$payload_2);
+          //     }
+          //     if ($ric['spo_unit']=='3') {
+          //       $payload_2 = array(
+          //         'register' => $ric['pro_drugregister'],
+          //         'view' => (int)$ric['pro_view'],
+          //         'rating' => (float)number_format($ric['pro_rating'],2,'.',''),
+
+          //         'originalPrice' => (float)number_format($originalPrice,2,'.',''),
+          //         'price' => (float)number_format($radio3*$price,2,'.',''),
+          //         'quantity' => (float)$quantity/$radio3,
+
+          //         'discount' => (float)$radio3*$discount,
+          //         'productId' => $ric['pro_id'].'-0',
+          //         'barcode' => $ric['pro_barcode1'],
+          //         'sku' => null,
+          //         'unit' => $ric['pro_unit3'],
+          //         'image' => ($pro_imgU3!='')? $pro_imgU3:$pro_img
+          //       );
+          //       array_push($cart['variants'],$payload_2);
+          //     }
               array_push($jsonx['cart'],$cart);
             }
 

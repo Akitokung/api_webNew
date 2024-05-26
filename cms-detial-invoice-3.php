@@ -19,39 +19,16 @@
           SELECT 
             * 
           FROM 
-            `shopping_orderHead`
+            `shopping_orderHead` AS `a` 
+            LEFT JOIN `shopping_order` AS `b` ON `a`.`soh_runing`=`b`.`spo_runing`
+            LEFT JOIN `product` AS `c` ON `b`.`spo_procode`=`c`.`pro_code`
           WHERE 
-            1 
-          ORDER BY 
-            `soh_datetime` 
-          DESC 
+            `a`.`soh_id`='".$_GET['id']."'
         ";
 
-
+        // `a`.`soh_id`='".$_GET['id']."'
+        
         $query = mysqli_query($Con_wang,$sql);      $num_rows = mysqli_num_rows($query);
-
-        $Per_Page = @$_GET["limits"];
-        $Page = @$_GET["pages"];
-        if (!@$_GET["pages"]) {$Page = 1;}
-        $Prev_Page = $Page-1; 
-        $Next_Page = $Page+1;
-        $Page_Start = (($Per_Page*$Page)-$Per_Page);
-        if ($num_rows <= $Per_Page) {$Num_Pages = 1;}
-        else if (($num_rows % $Per_Page) == 0) {$Num_Pages = ($num_rows/$Per_Page);}
-        else{$Num_Pages = ($num_rows/$Per_Page)+1;$Num_Pages = (int)$Num_Pages;}
-
-        $sql .=" LIMIT ".$Page_Start." , ".$Per_Page;
-        $query = mysqli_query($Con_wang,$sql);
-
-        // echo $sql;
-
-        $soh_payment = array(
-          '1' => 'เครดิต',
-          '2' => 'จ่ายเงินสด',
-          '3' => 'สั่งจ่ายเช็ค',
-          '4' => 'โอนเข้าบัญชี',
-        );
-
         if (!$query) {http_response_code(404);}
         $site = 'https://www.wangpharma.com/';
 
@@ -60,29 +37,9 @@
           echo 'ไม่ม่รายการสินค้า ในรถเข็น';
         }
         else {
-            $mem_address = ($mem['mem_address']!='')? 'เลขที่ '.trim($mem['mem_address']).' ':null;
-            $mem_village = ($mem['mem_village']!='')? 'หมู่ที่ '.trim($mem['mem_village']).' ':null;
-            $mem_alley = ($mem['mem_alley']!='')? 'ซอย'.trim($mem['mem_alley']).' ':null;
-            $mem_road = ($mem['mem_road']!='')? 'ถนน'.trim($mem['mem_road']).' ':null;
-            $mem_tumbon = ($mem['mem_tumbon']!='')? 'ตำบล'.trim($mem['mem_tumbon']).' ':null;
-            $mem_amphur = ($mem['mem_amphur']!='')? 'อำเภอ'.trim($mem['mem_amphur']).' ':null;
-            $mem_province = ($mem['mem_province']!='')? 'จังหวัด'.trim($mem['mem_province']).' ':null;
-            $mem_post = ($mem['mem_post']!='')? 'รหัสไปรษณีย์ '.trim($mem['mem_post']).' ':null;
-            $country = 'ประเทศไทย';
+          $result = mysqli_fetch_array($query);
 
-            $address = $mem_address.$mem_village.$mem_alley.$mem_road.$mem_tumbon.$mem_amphur.$mem_province.$mem_post.$country;
-
-          $json = array(
-            'orders' => array(),
-            'limits' => (int)$Per_Page,
-            'pages' => (int)$Page,
-            'pending' => (int)208,
-            'processing' => (int)96,
-            'delivered' => (int)250,
-            'totalDoc' => (int)$num_rows,
-          );
-          while($result = mysqli_fetch_array($query,MYSQLI_ASSOC)) {
-            $mem = mysqli_fetch_array(mysqli_query($Con_wang,"
+          $mem = mysqli_fetch_array(mysqli_query($Con_wang,"
               SELECT 
                 * 
               FROM 
@@ -97,7 +54,19 @@
               SELECT * FROM `logintsc_shipping_type` WHERE `lst_id`='".$result['soh_shiptype']."'
             "));
 
-            $orders = array(
+            $mem_address = ($mem['mem_address']!='')? 'เลขที่ '.trim($mem['mem_address']).' ':null;
+            $mem_village = ($mem['mem_village']!='')? 'หมู่ที่ '.trim($mem['mem_village']).' ':null;
+            $mem_alley = ($mem['mem_alley']!='')? 'ซอย'.trim($mem['mem_alley']).' ':null;
+            $mem_road = ($mem['mem_road']!='')? 'ถนน'.trim($mem['mem_road']).' ':null;
+            $mem_tumbon = ($mem['mem_tumbon']!='')? 'ตำบล'.trim($mem['mem_tumbon']).' ':null;
+            $mem_amphur = ($mem['mem_amphur']!='')? 'อำเภอ'.trim($mem['mem_amphur']).' ':null;
+            $mem_province = ($mem['mem_province']!='')? 'จังหวัด'.trim($mem['mem_province']).' ':null;
+            $mem_post = ($mem['mem_post']!='')? 'รหัสไปรษณีย์ '.trim($mem['mem_post']).' ':null;
+            $country = 'ประเทศไทย';
+
+            $address = $mem_address.$mem_village.$mem_alley.$mem_road.$mem_tumbon.$mem_amphur.$mem_province.$mem_post.$country;
+
+          $json = array(
               'user_info' => array(
                 'name' => $mem['mem_name'],
                 'contact' => $mem['mem_name'],
@@ -109,9 +78,9 @@
               ),
               'cart' => array(),
               'discount' => 0,
-              '_id' => $result['soh_runing'],
+              '_id' => (int)$result['soh_id'],
               'shippingOption' => $lg['lst_type'],    // บริษัท ขนส่งที่เลือก Flash | POST | BEST | DHL | Wang
-              'paymentMethod' => $soh_payment[($result['soh_payment']!='')? $result['soh_payment']:1],      // รูปแบบการชำระเงิน
+              'paymentMethod' => 'Cash',       // รูปแบบการชำระเงิน
 
               'status' => 'Delivered',        // สถานะขนส่ง
 
@@ -122,13 +91,16 @@
               'user' => $mem['mem_code'],
               'createdAt' => $result['soh_datetime'],
               'updatedAt' => $result['soh_printtime'],
-              'invoice' => (int)$result['soh_id'],
+              'invoice' => $result['soh_runing'],
               '__v' => 0,
-            );
-
+          );
             $ic = "
               SELECT 
-                * 
+                *,
+                `b`.`pro_priceTag` AS `p_tag` ,
+                `b`.`pro_priceA` AS `p_a` , 
+                `b`.`pro_priceB` AS `p_b` , 
+                `b`.`pro_priceC` AS `p_c` 
               FROM 
                 `shopping_order` AS `a` 
                 LEFT JOIN `product` AS `b` ON `a`.`spo_procode`=`b`.`pro_code`
@@ -138,7 +110,12 @@
 
             $qic = mysqli_query($Con_wang,$ic);  $num_rows = mysqli_num_rows($qic);
             while ($ric = mysqli_fetch_array($qic)) {
-
+              if ($mem['mem_price']=='A') {$price = number_format($ric['p_a'],2,'.','');}
+              else if ($mem['mem_price']=='B') {$price = number_format($ric['p_b'],2,'.','');}
+              else if ($mem['mem_price']=='C') {$price = number_format($ric['p_c'],2,'.','');}
+              $originalPrice = ($ric['p_tag']!=0)? number_format($ric['p_tag'],2,'.',''):number_format($ric['p_c'],2,'.','');
+              $discount = $originalPrice-$price;
+          
               $status = ($ric['pro_instock']>=$ric['pro_limitA'])? 'show':'hide';
               $status = ($ric['pro_show']==0)? 'show':'hide';
 
@@ -154,7 +131,7 @@
               $title_th = ($title_th!='')? $title_th:$ric['pro_name'];
               $slug = ($ric['pro_gs3']!=0)? 'โปรโมชั่น ฯ':'';
 
-              $quantity = (int)$pro['pro_instock'];
+              $quantity = (int)$ric['pro_instock'];
               $quantity = ($quantity>1)? 999:0;
 
               $cart = array(
@@ -190,6 +167,7 @@
                 'updatedAt' => $result['soh_printtime'],
                 '__v' => 0,
                 'id' => $ric['spo_id'],
+                'variant' => array(),
                 'price' => (float)number_format($ric['spo_ppu'],2,'.',''),
                 'originalPrice' => (float)number_format($ric['spo_discount'],2,'.',''),
                 'quantity' => (int)number_format($ric['spo_amount'],0,'.',''),
@@ -215,11 +193,84 @@
               }
               $tag_ms .= ']';
               $cart['tag'][] = (COUNT($tag_x)==0)? '':$tag_ms;          
-              array_push($orders['cart'],$cart);
+
+              $quantity = (int)$ric['pro_instock'];
+              $quantity = ($quantity>1)? 999:0;
+
+          if ($mem_RCoin['mem_price']=='A') {$price = number_format($ric['p_a'],2,'.','');}
+          else if ($mem_RCoin['mem_price']=='B') {$price = number_format($ric['p_b'],2,'.','');}
+          else if ($mem_RCoin['mem_price']=='C') {$price = number_format($ric['p_c'],2,'.','');}
+          $originalPrice = ($ric['p_tag']!=0)? number_format($ric['p_tag'],2,'.',''):number_format($ric['p_c'],2,'.','');
+          $discount = $originalPrice-$price;
+
+          $radio1 = $ric['pro_ratio1']/$ric['pro_ratio1'];
+          $radio2 = $ric['pro_ratio1']/$ric['pro_ratio2'];
+          $radio3 = $ric['pro_ratio1']/$ric['pro_ratio3'];
+
+          $pro_img = str_replace('../',$site,$ric['pro_img']);
+          $pro_imgU1 = str_replace('../',$site,$ric['pro_imgU1']);
+          $pro_imgU2 = str_replace('../',$site,$ric['pro_imgU2']);
+          $pro_imgU3 = str_replace('../',$site,$ric['pro_imgU3']);
+
+              if ($ric['spo_unit']==1) {
+                $payload_2 = array(
+                  'register' => $ric['pro_drugregister'],
+                  'view' => (int)$ric['pro_view'],
+                  'rating' => (float)number_format($ric['pro_rating'],2,'.',''),
+
+                  'originalPrice' => (float)number_format($originalPrice,2,'.',''),
+                  'price' => (float)number_format($radio1*$price,2,'.',''),
+                  'quantity' => (float)$quantity/$radio1,
+
+                  'discount' => (float)$radio1*$discount,
+                  'productId' => $ric['pro_id'].'-0',
+                  'barcode' => $ric['pro_barcode1'],
+                  'sku' => null,
+                  'unit' => $ric['pro_unit1'],
+                  'image' => ($pro_imgU1!='')? $pro_imgU1:$pro_img
+                );
+                array_push($cart['variant'],$payload_2);
+              }
+              if ($ric['spo_unit']==2) {
+                $payload_2 = array(
+                  'register' => $ric['pro_drugregister'],
+                  'view' => (int)$ric['pro_view'],
+                  'rating' => (float)number_format($ric['pro_rating'],2,'.',''),
+
+                  'originalPrice' => (float)number_format($originalPrice,2,'.',''),
+                  'price' => (float)number_format($radio2*$price,2,'.',''),
+                  'quantity' => (float)$quantity/$radio2,
+
+                  'discount' => (float)$radio2*$discount,
+                  'productId' => $ric['pro_id'].'-0',
+                  'barcode' => $ric['pro_barcode1'],
+                  'sku' => null,
+                  'unit' => $ric['pro_unit2'],
+                  'image' => ($pro_imgU2!='')? $pro_imgU2:$pro_img
+                );
+                array_push($cart['variant'],$payload_2);
+              }
+              if ($ric['spo_unit']==3) {
+                $payload_2 = array(
+                  'register' => $ric['pro_drugregister'],
+                  'view' => (int)$ric['pro_view'],
+                  'rating' => (float)number_format($ric['pro_rating'],2,'.',''),
+
+                  'originalPrice' => (float)number_format($originalPrice,2,'.',''),
+                  'price' => (float)number_format($radio3*$price,2,'.',''),
+                  'quantity' => (float)$quantity/$radio3,
+
+                  'discount' => (float)$radio3*$discount,
+                  'productId' => $ric['pro_id'].'-0',
+                  'barcode' => $ric['pro_barcode1'],
+                  'sku' => null,
+                  'unit' => $ric['pro_unit3'],
+                  'image' => ($pro_imgU3!='')? $pro_imgU3:$pro_img
+                );
+                array_push($cart['variant'],$payload_2);
+              }
+              array_push($json['cart'],$cart);
             }
-            array_push($json['orders'],$orders);
-          }
-          mysqli_close($Con_wang);
           echo json_encode($json);
         }
       }
