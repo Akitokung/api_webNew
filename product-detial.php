@@ -14,9 +14,16 @@
       $data = decode_jwt($token);
       if ($data) {
         //echo $data['mem_code'];
+
+        $mem = mysqli_fetch_array(mysqli_query($Con_wang,"SELECT * FROM `member` WHERE `mem_code`='".$data['mem_code']."'"));
+
         $sql = "
           SELECT 
-            * 
+            *,
+            `a`.`pro_priceTag` AS `p_tag` ,
+            `a`.`pro_priceA` AS `p_a` , 
+            `a`.`pro_priceB` AS `p_b` , 
+            `a`.`pro_priceC` AS `p_c` 
           FROM 
             `product` AS `a` 
             LEFT JOIN `product_pharma` AS `b` ON `a`.`pro_code`=`b`.`pp_procode`
@@ -28,260 +35,364 @@
         ";
         $query = mysqli_query($Con_wang,$sql);
         if (!$query) {http_response_code(404);}
-        $json = array();
         // Akitokung
         $site = 'https://www.wangpharma.com/';
         $result = mysqli_fetch_array($query,MYSQLI_ASSOC);
-          //  array_push($json,$result['pro_id']);      // ถ้าเอาทุกตัวแปล
 
-          $mem = mysqli_fetch_array(mysqli_query($Con_wang,"
-            SELECT 
-              *
-            FROM 
-              `member` AS `a` 
-              LEFT JOIN `member_payment` AS `b` ON `a`.`mem_code`=`b`.`mp_memcode`
-            WHERE 
-              `a`.`mem_code`='".$data['mem_code']."'
-          "));
-
-          $fb = mysqli_fetch_array(mysqli_query($Con_wang,"
-            SELECT `shf_procode` FROM `shopping_favorites` WHERE `shf_memcode`='".$data['mem_code']."' AND `shf_procode`='".$result['pro_code']."'
-          "));
-
-          $pro_nameMain = ($result['pro_nameMain']!='')? $result['pro_nameMain']:$result['pro_nameTH'];
-          $pro_nameMain = ($pro_nameMain!='')? $pro_nameMain:$result['pro_name'];
-          $pro_instock = ($result['pro_instock']!=0)? 'มี':'หมด';
-          $pro_instock = (int)999;
-
-          // $pro_instock = 'มี';
-
-          $pro_img = str_replace('../',$site,$result['pro_img']);
-          $pro_imgU1 = str_replace('../',$site,$result['pro_imgU1']);
-          $pro_imgU2 = str_replace('../',$site,$result['pro_imgU2']);
-          $pro_imgU3 = str_replace('../',$site,$result['pro_imgU3']);
-
-          if ($result['pro_barcode1']!='') {$pro_barcode = $result['pro_barcode1'];}
-          else if ($result['pro_barcode2']!='') {$pro_barcode = $result['pro_barcode2'];}
-          else if ($result['pro_barcode3']!='') {$pro_barcode = $result['pro_barcode3'];}
-          $Price_Tag = number_format($result['pro_priceTag'],2,'.','');
-
-          $bad=array("\n","\r",' ');
-          $pp_proper = str_replace($bad,'',strip_tags($result['pp_properties']));
-          $pp_htu = str_replace($bad,'',strip_tags($result['pp_how_to_use']));
-          $pro_details = str_replace($bad,'',strip_tags($result['pro_details']));
-
-          $flashsale_end = ($result['pro_gs3']=='1')? date('Y-m-t 23:59:59'):null;
-          $promotion = ($result['pro_gs3']=='1')? true:false;
-          $pro_favorites = ($fb['shf_procode']!='')? true:false;
-
-          $rating = explode('.', $result['pro_rating']);
-          if ($rating[1]!='0') {
-            if (($rating[1]>0) && ($rating[1]<=5)) {
-              $result['pro_rating']=$rating[0].'.5';
-            }
-            if (($rating[1]>0) && ($rating[1]>5)) {
-              $result['pro_rating']=($rating[0]+1).'.0';
-            }
-          }
-          $pro_limitA = ($result['pro_limitA']!=0)? $result['pro_limitA']:'1.00';
-          $pro_limitU = ($result['pro_limitA']!=0)? $result['pro_unit1']:$result['pro_unit1'];
-
-          $radio1 = $result['pro_ratio1']/$result['pro_ratio1'];
-          $radio2 = $result['pro_ratio1']/$result['pro_ratio2'];
-          $radio3 = $result['pro_ratio1']/$result['pro_ratio3'];
-          if ($mem['mp_price']=='A') {$price = $result['pro_priceA'];}
-          else if ($mem['mp_price']=='B') {$price = $result['pro_priceB'];}
-          else if ($mem['mp_price']=='C') {$price = $result['pro_priceC'];}
-
-          $pro_priceU1 = ($result['pro_unit1']!='')? number_format($price*$radio1,2,'.',','):null;
-          $pro_priceU2 = ($result['pro_unit2']!='')? number_format($price*$radio2,2,'.',','):null;
-          $pro_priceU3 = ($result['pro_unit3']!='')? number_format($price*$radio3,2,'.',','):null;
-
-          $Price_after = ($result['pro_priceA']>=1)? number_format($price,2,'.',''):number_format($result['pro_priceC'],2,'.','');         
-          $Price_before = ($result['pro_priceTag']>=1)? number_format($result['pro_priceTag'],2,'.',''):number_format($result['pro_priceC'],2,'.','');
+        if ($mem['mem_price']=='A') {$price = number_format($result['p_a'],2,'.','');}
+        else if ($mem['mem_price']=='B') {$price = number_format($result['p_b'],2,'.','');}
+        else if ($mem['mem_price']=='C') {$price = number_format($result['p_c'],2,'.','');}
+        $originalPrice = ($result['p_tag']!=0)? number_format($result['p_tag'],2,'.',''):number_format($result['p_c'],2,'.','');
+        $discount = $originalPrice-$price;
 
 
-          $Price_pro = number_format($result['pro_priceA'],2,'.','');
+          $status = ($result['pro_instock']>=$result['pro_limitA'])? 'show':'hide';
+          $status = ($result['pro_show']==0)? 'show':'hide';
 
-          $Price_discount = number_format($Price_before-$Price_after,2,'.','');
-          $Percent_save = number_format(($Price_discount/$Price_before)*100,2,'.','');
+          $description_th = str_replace($bad,'',strip_tags($result['pro_details']));
+          $title_th = ($result['pro_nameMain']!='')? $result['pro_nameMain']:$result['pro_nameTH'];
+          $title_th = ($title_th!='')? $title_th:$result['pro_name'];
+          $slug = ($result['pro_gs3']!=0)? 'โปรโมชั่น ฯ':'';
 
-          $pro_url = 'https://www.wangpharma.com/shopping/shopping-detial.php?pc='.$result['pro_code'];
+          $quantity = (int)$result['pro_instock'];
+          $quantity = ($quantity>1)? 999:0;
 
-          $ship = mysqli_fetch_array(mysqli_query($Con_wang,"
-            SELECT 
-            `a`.`mem_code`,
-            `a`.`mem_route`,
-            `b`.`ltr_date`
-            FROM 
-              member AS `a`
-              LEFT JOIN `logistic_transportation` AS `b` ON `a`.`mem_route`=`b`.`ltr_mscode` 
-            WHERE 
-              `a`.`mem_code`='".$data['mem_code']."' AND 
-              `b`.`ltr_date`>'".date('Y-m-d')."'
-            ORDER BY 
-              `b`.`ltr_date`
-            ASC 
-              LIMIT 
-            1
-          "));
-          $ship['ltr_date'] = (strtotime($ship['ltr_date']>=1))? $ship['ltr_date']:date('Y-m-d');
-          list($ys,$ms,$ds) = explode('-', $ship['ltr_date']);
-          $ms = date('n',strtotime($ship['ltr_date']));
-          $lt = mysqli_fetch_array(mysqli_query($Con_pharSYS,"
-            SELECT `sDateFini` FROM `logistic` WHERE `sIdCus`='".$data['mem_code']."' ORDER BY `sDateFini` DESC LIMIT 1
-          "));    list($ltdate,$lttime) = explode(' ',$lt['sDateFini']);
-          $shipping = 'ถึงคุณวันที่ '.$ds.' / '.$month_abt_th[$ms].' / '.SUBSTR(($ys+543),-2,2).' ~ '.SUBSTR($lttime,0,5).' น.';
-          $shipping = (strtotime($ship['ltr_date'])>=1)? $shipping:null;
+          $json = array(
+            'product' => array(
+              'prices' => array(
+                'price' => (float)$price,
+                'originalPrice' => (float)$originalPrice,
+                'discount' => (float)$discount,
+              ),
+              'categories' => array(),
+              'image' => array(),
+              'tag' => array(),
+              'variants' => array(),
+              'status' => $status,
+              '_id' => $result['pro_id'],
+              'productId' => $result['pro_id'],
+              'productCode' => $result['pro_code'],
+              'sku' => null,
+              'barcode' => "",
+              'title' => array(
+                'th' => $title_th,
+                'en' => $result['pro_nameEng']
+              ),
+              'description' => array(
+                'th' => $description_th,
+                'en' => ''
+              ),
+              'slug' => $slug, 
+              'category' => array(
+                '_id' => $result['pro_mode'], 
+                'name' => array(
+                  'th' => $result['pd_name_TH'], 
+                  'en' => $result['pd_name_Eng'], 
+                ),
+              ),
+              'stock' => $quantity,
+              'isCombination' => true,
+              'createdAt' => $result['pro_dateadd'], 
+              'updatedAt' => date('Y-m-d'), 
+              'sales' => 0,
+              '__v' => 0
 
-          $payload = array(
-            'pro_code' => $result['pro_code'],              // รหัสสินค้า
-            'pro_nameMain' => $pro_nameMain,                // ชื่อภาษาไทย
-            'pro_nameEng' => $result['pro_nameEng'],        // ชื่อภาษาอังกฤษ
-            'pro_barcode' => $pro_barcode,                  // บาร์โค๊ด 1 , 2 , 3 
-            'pro_unit1' => $result['pro_unit1'],            // หน่วยที่ 1
-            'pro_mode' => $result['pd_name'],
-            'pro_priceU1' => $pro_priceU1,                  // ราคา / หน่วยที่ 1
-
-            'pro_unit2' => $result['pro_unit2'],            // หน่วยที่ 2
-            'pro_priceU2' => $pro_priceU2,                  // ราคา / หน่วยที่ 2
-
-            'pro_unit3' => $result['pro_unit3'],            // หน่วยที่ 3
-            'pro_priceU3' => ($result['pro_unit3']!='')? $pro_priceU3:'',                  // ราคา / หน่วยที่ 3
-
-            'pro_view' => number_format($result['pro_view'],0,'.',','),              // ยอดเข้าชม
-            'Price_before' => $Price_before,                // ราคาก่อนลด
-            'Price_after' => $Price_after,                  // ราคาหลังลดแล้ว
-            
-            'Price_discount' => $Price_discount,            // มูลค่าที่ลดไป
-            'Percent_save' => $Percent_save,                // เปอร์เซ็น ( % ) ที่ลดไป
-            'promotion' => $promotion,                      // โปรโมชั่น = true
-
-            'Price_pro' => number_format($Price_pro,2,'.',','),
-            
-            'pro_limitA' => $pro_limitA,          // จำนวนขั้นต่ำในการสั่งในราคาโปรโมชั้น ( สั่งต่ำกว่าได้ แต่จะไม่ได้ราคาโปรโมชั่น )
-            'pro_limitU' => $pro_limitU,          // 
-            'flastsale_end' => $flashsale_end,
-
-            'Price_Tag' => $Price_Tag,                      // ราคาป้าย = ราคาที่พิมพ์ติดอยู่บนตัวสินค้า
-            'variants' => array(),
-            'pro_instock' => $pro_instock,                  // สถานะคงคลัง มี หรือ หมด สำหรับเงื่อนไขการเพิ่มใส่รถเข็น
-            /*
-            'pro_img' => $pro_img,                          // รูปหลักสินค้า
-            'pro_imgU1' => $pro_imgU1,                      // รูปสินค้าหน่วยที่ 1
-            'pro_imgU2' => $pro_imgU2,                      // รูปสินค้าหน่วยที่ 2
-            'pro_imgU3' => $pro_imgU3,                      // รูปสินค้าหน่วยที่ 3
-            */
-            'pro_img' => array(),
-            'pro_details' => $pro_details,
-            'pro_properties' => $pp_proper,
-            'pro_how_to_use' => $pp_htu,
-            /*
-            'pro_mode' => $result['pro_mode'],        
-            'pro_easymode' => $result['pro_easy_mode'],
-            */
-            'pro_favorites' => $pro_favorites,
-            'pro_rating' => number_format($result['pro_rating'],1,'.',','),
-            'pro_url' => $pro_url,
-            'shipping' => $shipping,
-            
-            'pro_spname' => $result['sp_name'], 
-            'pro_stin' => ($result['pro_instock']!=0)? true:false, 
-            'pro_instocknum' => ($result['pro_instock']!=0)? number_format($result['pro_instock'],2,'.',''):'',
-            'pro_show' => ($result['pro_show']!=0)? false:true, 
-            'pro_priceA' => ($result['pro_priceA']!=0)? number_format($result['pro_priceA'],2,'.',''):'',
-            'pro_priceB' => ($result['pro_priceB']!=0)? number_format($result['pro_priceB'],2,'.',''):'',
-            'pro_priceC' => ($result['pro_priceC']!=0)? number_format($result['pro_priceC'],2,'.',''):'',
-            'pro_rec' => ($result['pro_gs6']==1)? true:false,
-            'pro_base' => ($result['pro_gs7']==1)? true:false,
-            'pro_new' => ($result['pro_gs8']==1)? true:false,
+            ),
+            'relatedProducts' => (object)array(),
           );
 
-          $itt = 0;
-          if ($result['pro_img']!='') {
-            $itt++;
-            $img = 'img'.$itt;
-            $payload['pro_img'][$img] = $pro_img;
-          }
-          if ($result['pro_imgU1']) {
-            $itt++;
-            $img = 'img'.$itt;
-            $payload['pro_img'][$img] = $pro_imgU1;
-          }
-          if ($result['pro_imgU2']) {
-            $itt++;
-            $img = 'img'.$itt;
-            $payload['pro_img'][$img] = $pro_imgU2;
-          }
-          if ($result['pro_imgU3']) {
-            $itt++;
-            $img = 'img'.$itt;
-            $payload['pro_img'][$img] = $pro_imgU3;
-          }
+        if ($result['pro_glwa1']!=0) {$json['product']['categories'][] = 'ยาสามัญประจำบ้าน';}
+        if ($result['pro_glwa2']!=0) {$json['product']['categories'][] = 'ยาแผนโบราณ';}
+        if ($result['pro_glwa3']!=0) {$json['product']['categories'][] = 'อาหารเสริม';}
+        if ($result['pro_glwa4']!=0) {$json['product']['categories'][] = 'ยาอันตราย';}
+        if ($result['pro_glwa6']!=0) {$json['product']['categories'][] = 'ยาควบคุมพิเศษ';}
+        if ($result['pro_glwa7']!=0) {$json['product']['categories'][] = 'ยาตามใบสั่งแพทย์';}
+        if ($result['pro_glwa8']!=0) {$json['product']['categories'][] = 'ยาบรรจุเสร็จ';}
+        if ($result['pro_glwa9']!=0) {$json['product']['categories'][] = 'เครื่องมือแพทย์';}
+        if ($result['pro_glwa10']!=0) {$json['product']['categories'][] = 'เวชสำอาง';}
 
+          $pro_img = str_replace('../',$site,$result['pro_img']);
+          if ($result['pro_img']!='') {$json['product']['image'][] = $pro_img;}
+          else {$pro_img = '';}
 
-          $img = "SELECT `product_img_filePath` FROM `product_img` WHERE `product_img_productCode`='".$result['pro_code']."'";
-          $qimg = mysqli_query($Con_pharSYS,$img);    $ig = $itt+1;
-          while ($rimg = mysqli_fetch_array($qimg)) {
-            $img = 'img'.$ig;
-            $value = $site.'cms/product/'.$rimg['product_img_filePath'];
-            $payload['pro_img'][$img] = $value;
-            $ig++;
+          $pro_imgU1 = str_replace('../',$site,$result['pro_imgU1']);
+          if ($result['pro_imgU1']!='') {$json['product']['image'][] = $pro_imgU1;}
+
+          $pro_imgU2 = str_replace('../',$site,$result['pro_imgU2']);
+          if ($result['pro_imgU2']!='') {$json['product']['image'][] = $pro_imgU2;}
+
+          $pro_imgU3 = str_replace('../',$site,$result['pro_imgU3']);
+          if ($result['pro_imgU3']!='') {$json['product']['image'][] = $pro_imgU3;}
+
+          $tag_x = array();
+          if ($result['pro_gs6']!=0) {$tag_x[] = 'แนะนำขาย';}
+          if ($result['pro_gs7']!=0) {$tag_x[] = 'สินค้าขายดี';}
+          if ($result['pro_gs8']!=0) {$tag_x[] = 'สินค้าใหม่';}
+          if ($result['pro_gs3']!=0) {$tag_x[] = 'โปรโมชั่น ฯ';}
+
+          $tag_ms = '[';
+          foreach ($tag_x as $key => $value) {
+            $tag_ms .= '"'.$value;
+            if ($key!=COUNT($tag_x)-1) {$tag_ms .= '",';}
+            if ($key==COUNT($tag_x)-1) {$tag_ms .= '"';}
           }
+          $tag_ms .= ']';
+
+          $json['product']['tag'][] = (COUNT($tag_x)==0)? '':$tag_ms;
 
           $radio1 = $result['pro_ratio1']/$result['pro_ratio1'];
           $radio2 = $result['pro_ratio1']/$result['pro_ratio2'];
           $radio3 = $result['pro_ratio1']/$result['pro_ratio3'];
 
             if ($result['pro_unit1']!='') {
-              $pro_before = $radio1*$result['pro_priceC'];
-              $pro_after = $radio1*$result['pro_priceA'];
-
               $payload_2 = array(
-                'pro_unit' => $result['pro_unit1'],
-                'Price_Tag' => $Price_Tag,
-                'pro_before' => number_format($pro_before,2,'.',','),
-                'pro_after' => number_format($pro_after,2,'.',','),
+                'register' => $result['pro_drugregister'],
+                'view' => (int)$result['pro_view'],
+                'rating' => (float)number_format($result['pro_rating'],2,'.',''),
+
+                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'price' => (float)number_format($radio1*$price,2,'.',''),
+                'quantity' => (float)$quantity/$radio1,
+
+                'discount' => (float)$radio1*$discount,
+                'productId' => $result['pro_id'].'-0',
+                'barcode' => $result['pro_barcode1'],
+                'sku' => null,
+                'unit' => $result['pro_unit1'],
+                'image' => ($pro_imgU1!='')? $pro_imgU1:$pro_img
               );
-              array_push($payload['variants'],$payload_2);
+              array_push($json['product']['variants'],$payload_2);
             }
 
             if ($result['pro_unit2']!='') {
-              $pro_before = $radio2*$result['pro_priceC'];
-              $pro_after = $radio2*$result['pro_priceA'];
 
               $payload_2 = array(
-                'pro_unit' => $result['pro_unit2'],
-                'Price_Tag' => $Price_Tag,
-                'pro_before' => number_format($pro_before,2,'.',','),
-                'pro_after' => number_format($pro_after,2,'.',','),
+                'register' => $result['pro_drugregister'],
+                'view' => (int)$result['pro_view'],
+                'rating' => (float)number_format($result['pro_rating'],2,'.',''),
+
+                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'price' => (float)number_format($radio2*$price,2,'.',''),
+                'quantity' => (float)$quantity/$radio1,
+
+                'discount' => (float)$radio2*$discount,
+                'productId' => $result['pro_id'].'-1',
+                'barcode' => $result['pro_barcode2'],
+                'sku' => null,
+                'unit' => $result['pro_unit2'],
+                'image' => ($pro_imgU2!='')? $pro_imgU2:$pro_img
+              );
+              array_push($json['product']['variants'],$payload_2);
+            }
+
+            if ($result['pro_unit3']!='') {              
+              $payload_2 = array(
+                'register' => $result['pro_drugregister'],
+                'view' => (int)$result['pro_view'],
+                'rating' => (float)number_format($result['pro_rating'],2,'.',''),
+
+                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'price' => (float)number_format($radio3*$price,2,'.',''),
+                'quantity' => (float)$quantity/$radio1,
+
+                'discount' => (float)$radio3*$discount,
+                'productId' => $result['pro_id'].'-2',
+                'barcode' => $result['pro_barcode3'],
+                'sku' => null,
+                'unit' => $result['pro_unit3'],
+                'image' => ($pro_imgU3!='')? $pro_imgU3:$pro_img
+              );
+              array_push($json['product']['variants'],$payload_2);
+            }
+
+        // echo SUBSTR(trim($result['pro_name']),0,12);
+
+        $sql2 = "
+            SELECT 
+              *,
+              `b`.`pro_priceTag` AS `p_tag` ,
+              `b`.`pro_priceA` AS `p_a` , 
+              `b`.`pro_priceB` AS `p_b` , 
+              `b`.`pro_priceC` AS `p_c` 
+            FROM 
+              `product` AS `b`
+              LEFT JOIN `product_drugmode` AS `c` ON `b`.`pro_mode`=`c`.`pd_code`
+            WHERE 
+              b.pro_code !='".$result['pro_code']."' AND 
+              `b`.`pro_name` LIKE '".SUBSTR(trim($result['pro_name']),0,12)."%'
+            LIMIT
+              12
+        ";
+        $query2 = mysqli_query($Con_wang,$sql2);
+        while($result2 = mysqli_fetch_array($query2,MYSQLI_ASSOC)) {
+
+        if ($mem['mem_price']=='A') {$price = number_format($result2['p_a'],2,'.','');}
+        else if ($mem['mem_price']=='B') {$price = number_format($result2['p_b'],2,'.','');}
+        else if ($mem['mem_price']=='C') {$price = number_format($result2['p_c'],2,'.','');}
+        $originalPrice = ($result2['p_tag']!=0)? number_format($result2['p_tag'],2,'.',''):number_format($result2['p_c'],2,'.','');
+        $discount = $originalPrice-$price;
+
+
+          $status = ($result2['pro_instock']>=$result2['pro_limitA'])? 'show':'hide';
+          $status = ($result2['pro_show']==0)? 'show':'hide';
+
+          $description_th = str_replace($bad,'',strip_tags($result2['pro_details']));
+          $title_th = ($result2['pro_nameMain']!='')? $result2['pro_nameMain']:$result2['pro_nameTH'];
+          $title_th = ($title_th!='')? $title_th:$result2['pro_name'];
+          $slug = ($result2['pro_gs3']!=0)? 'โปรโมชั่น ฯ':'';
+
+          $quantity = (int)$result2['pro_instock'];
+          $quantity = ($quantity>1)? 999:0;
+
+
+          $payload = array(
+              'prices' => array(
+                'price' => (float)$price,
+                'originalPrice' => (float)$originalPrice,
+                'discount' => (float)$discount,
+              ),
+              'categories' => array(),
+              'image' => array(),
+              'tag' => array(),
+              'variants' => array(),
+              'status' => $status,
+              '_id' => $result2['pro_id'],
+              'productId' => $result2['pro_id'],
+              'productCode' => $result2['pro_code'],
+              'sku' => null,
+              'barcode' => "",
+              'title' => array(
+                'th' => $title_th,
+                'en' => $result2['pro_nameEng']
+              ),
+              'description' => array(
+                'th' => $description_th,
+                'en' => ''
+              ),
+              'slug' => $slug, 
+              'category' => array(
+                '_id' => $result2['pro_mode'], 
+                'name' => array(
+                  'th' => $result2['pd_name_TH'], 
+                  'en' => $result2['pd_name_Eng'], 
+                ),
+              ),
+              'stock' => $quantity,
+              'isCombination' => true,
+              'createdAt' => $result2['pro_dateadd'], 
+              'updatedAt' => date('Y-m-d'), 
+              'sales' => 0,
+              '__v' => 0
+          );
+          if ($result2['pro_glwa1']!=0) {$payload['categories'][] = 'ยาสามัญประจำบ้าน';}
+          if ($result2['pro_glwa2']!=0) {$payload['categories'][] = 'ยาแผนโบราณ';}
+          if ($result2['pro_glwa3']!=0) {$payload['categories'][] = 'อาหารเสริม';}
+          if ($result2['pro_glwa4']!=0) {$payload['categories'][] = 'ยาอันตราย';}
+          if ($result2['pro_glwa6']!=0) {$payload['categories'][] = 'ยาควบคุมพิเศษ';}
+          if ($result2['pro_glwa7']!=0) {$payload['categories'][] = 'ยาตามใบสั่งแพทย์';}
+          if ($result2['pro_glwa8']!=0) {$payload['categories'][] = 'ยาบรรจุเสร็จ';}
+          if ($result2['pro_glwa9']!=0) {$payload['categories'][] = 'เครื่องมือแพทย์';}
+          if ($result2['pro_glwa10']!=0) {$payload['categories'][] = 'เวชสำอาง';}
+
+          $pro_img = str_replace('../',$site,$result2['pro_img']);
+          if ($result2['pro_img']!='') {$payload['image'][] = $pro_img;}
+          else {$pro_img = '';}
+
+          $pro_imgU1 = str_replace('../',$site,$result2['pro_imgU1']);
+          if ($result2['pro_imgU1']!='') {$payload['image'][] = $pro_imgU1;}
+
+          $pro_imgU2 = str_replace('../',$site,$result2['pro_imgU2']);
+          if ($result2['pro_imgU2']!='') {$payload['image'][] = $pro_imgU2;}
+
+          $pro_imgU3 = str_replace('../',$site,$result2['pro_imgU3']);
+          if ($result2['pro_imgU3']!='') {$payload['image'][] = $pro_imgU3;}
+
+          $tag_x = array();
+          if ($result2['pro_gs6']!=0) {$tag_x[] = 'แนะนำขาย';}
+          if ($result2['pro_gs7']!=0) {$tag_x[] = 'สินค้าขายดี';}
+          if ($result2['pro_gs8']!=0) {$tag_x[] = 'สินค้าใหม่';}
+          if ($result2['pro_gs3']!=0) {$tag_x[] = 'โปรโมชั่น ฯ';}
+
+          $tag_ms = '[';
+          foreach ($tag_x as $key => $value) {
+            $tag_ms .= '"'.$value;
+            if ($key!=COUNT($tag_x)-1) {$tag_ms .= '",';}
+            if ($key==COUNT($tag_x)-1) {$tag_ms .= '"';}
+          }
+          $tag_ms .= ']';
+
+          $payload['tag'][] = (COUNT($tag_x)==0)? '':$tag_ms;
+
+          $radio1 = $result2['pro_ratio1']/$result2['pro_ratio1'];
+          $radio2 = $result2['pro_ratio1']/$result2['pro_ratio2'];
+          $radio3 = $result2['pro_ratio1']/$result2['pro_ratio3'];
+
+            if ($result2['pro_unit1']!='') {
+              $payload_2 = array(
+                'register' => $result2['pro_drugregister'],
+                'view' => (int)$result2['pro_view'],
+                'rating' => (float)number_format($result2['pro_rating'],2,'.',''),
+
+                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'price' => (float)number_format($radio1*$price,2,'.',''),
+                'quantity' => (float)$quantity/$radio1,
+
+                'discount' => (float)$radio1*$discount,
+                'productId' => $result2['pro_id'].'-0',
+                'barcode' => $result2['pro_barcode1'],
+                'sku' => null,
+                'unit' => $result2['pro_unit1'],
+                'image' => ($pro_imgU1!='')? $pro_imgU1:$pro_img
               );
               array_push($payload['variants'],$payload_2);
             }
 
-            if ($result['pro_unit3']!='') {
-              $pro_before = $radio3*$result['pro_priceC'];
-              $pro_after = $radio3*$result['pro_priceA'];
-              
+            if ($result2['pro_unit2']!='') {
+
               $payload_2 = array(
-                'pro_unit' => $result['pro_unit3'],
-                'Price_Tag' => $Price_Tag,
-                'pro_before' => number_format($pro_before,2,'.',','),
-                'pro_after' => number_format($pro_after,2,'.',','),
+                'register' => $result2['pro_drugregister'],
+                'view' => (int)$result2['pro_view'],
+                'rating' => (float)number_format($result2['pro_rating'],2,'.',''),
+
+                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'price' => (float)number_format($radio2*$price,2,'.',''),
+                'quantity' => (float)$quantity/$radio1,
+
+                'discount' => (float)$radio2*$discount,
+                'productId' => $result2['pro_id'].'-1',
+                'barcode' => $result2['pro_barcode2'],
+                'sku' => null,
+                'unit' => $result2['pro_unit2'],
+                'image' => ($pro_imgU2!='')? $pro_imgU2:$pro_img
               );
               array_push($payload['variants'],$payload_2);
             }
 
+            if ($result2['pro_unit3']!='') {              
+              $payload_2 = array(
+                'register' => $result2['pro_drugregister'],
+                'view' => (int)$result2['pro_view'],
+                'rating' => (float)number_format($result2['pro_rating'],2,'.',''),
 
-          // $payload_2 = array(
-          //   'pro_unit1' => $result['pro_unit1'],
-          //   'pro_unit2' => $result['pro_unit2'],
-          //   'pro_unit3' => $result['pro_unit3'],
-          // );
-          // array_push($payload['variants'],$payload_2);
+                'originalPrice' => (float)number_format($pro_before,2,'.',''),
+                'price' => (float)number_format($radio3*$price,2,'.',''),
+                'quantity' => (float)$quantity/$radio1,
 
-        array_push($json,$payload);
-          
+                'discount' => (float)$radio3*$discount,
+                'productId' => $result2['pro_id'].'-2',
+                'barcode' => $result2['pro_barcode3'],
+                'sku' => null,
+                'unit' => $result2['pro_unit3'],
+                'image' => ($pro_imgU3!='')? $pro_imgU3:$pro_img
+              );
+              array_push($payload['variants'],$payload_2);
+            }
+
+            array_push($json['relatedProducts'],$payload);
+
+        }
+        // echo $sql;
+
         mysqli_close($Con_wang);
         echo json_encode($json);
       }
