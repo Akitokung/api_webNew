@@ -42,10 +42,10 @@
           $site = 'https://www.wangpharma.com/';
 
         if ($arr['statusUpdate']=='add') {     
-
           calculator_cart($mem,$pro,$num,$unit,$sitee,$lat,$long);
           $statusUpdate = 'add success';
         }
+
         else if ($arr['statusUpdate']=='del') {
           $cart = mysqli_fetch_array(mysqli_query($Con_wang,"
             SELECT 
@@ -73,7 +73,22 @@
 
           $statusUpdate = 'del success';
         }
+
         else {
+
+          $sql = mysqli_query($Con_wang,"
+            UPDATE 
+            `shopping_cart` 
+          SET 
+            `spc_amount`='0.00' , 
+            `spc_amountU1`='0.00',
+            `spc_discount`='0.00',
+            `spc_total`='0.00' 
+          WHERE 
+            `spc_procode`='".$arr['productCode']."' AND 
+            `spc_unit`='".$spo_unit."'
+          ");
+          /*
           $sql = mysqli_query($Con_wang,"
             DELETE FROM 
               `shopping_cart` 
@@ -81,7 +96,9 @@
               `spc_memcode`='".$mem."' AND 
               `spc_procode`='".$pro."'
           ");
+          */
           $statusUpdate = 'delAll success';
+
         }
 
         $sql = "

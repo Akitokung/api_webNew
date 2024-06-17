@@ -223,14 +223,16 @@
             LIMIT
               12
         ";
-        $query2 = mysqli_query($Con_wang,$sql2);
+        $query2 = mysqli_query($Con_wang,$sql2);    $num_rows = mysqli_num_rows($query2);
+
+        if ($num_rows<=0) {$json['relatedProducts'] = null;}
         while($result2 = mysqli_fetch_array($query2,MYSQLI_ASSOC)) {
 
-        if ($mem['mem_price']=='A') {$price = number_format($result2['p_a'],2,'.','');}
-        else if ($mem['mem_price']=='B') {$price = number_format($result2['p_b'],2,'.','');}
-        else if ($mem['mem_price']=='C') {$price = number_format($result2['p_c'],2,'.','');}
-        $originalPrice = ($result2['p_tag']!=0)? number_format($result2['p_tag'],2,'.',''):number_format($result2['p_c'],2,'.','');
-        $discount = $originalPrice-$price;
+          if ($mem['mem_price']=='A') {$price = number_format($result2['p_a'],2,'.','');}
+          else if ($mem['mem_price']=='B') {$price = number_format($result2['p_b'],2,'.','');}
+          else if ($mem['mem_price']=='C') {$price = number_format($result2['p_c'],2,'.','');}
+          $originalPrice = ($result2['p_tag']!=0)? number_format($result2['p_tag'],2,'.',''):number_format($result2['p_c'],2,'.','');
+          $discount = $originalPrice-$price;
 
 
           $status = ($result2['pro_instock']>=$result2['pro_limitA'])? 'show':'hide';
@@ -391,7 +393,6 @@
             array_push($json['relatedProducts'],$payload);
 
         }
-        // echo $sql;
 
         mysqli_close($Con_wang);
         echo json_encode($json);
