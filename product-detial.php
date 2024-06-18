@@ -98,7 +98,7 @@
               '__v' => 0
 
             ),
-            'relatedProducts' => (object)array(),
+            'relatedProducts' => array(),
           );
 
         if ($result['pro_glwa1']!=0) {$json['product']['categories'][] = 'ยาสามัญประจำบ้าน';}
@@ -218,11 +218,13 @@
               `product` AS `b`
               LEFT JOIN `product_drugmode` AS `c` ON `b`.`pro_mode`=`c`.`pd_code`
             WHERE 
-              b.pro_code !='".$result['pro_code']."' AND 
+              `b`.`pro_show`!='1' AND 
+              `b`.`pro_code` !='".$result['pro_code']."' AND 
               `b`.`pro_name` LIKE '".SUBSTR(trim($result['pro_name']),0,12)."%'
             LIMIT
               12
         ";
+        // echo $sql2;
         $query2 = mysqli_query($Con_wang,$sql2);    $num_rows = mysqli_num_rows($query2);
 
         if ($num_rows<=0) {$json['relatedProducts'] = null;}
