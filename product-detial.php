@@ -101,15 +101,15 @@
             'relatedProducts' => array(),
           );
 
-        if ($result['pro_glwa1']!=0) {$json['product']['categories'][] = 'ยาสามัญประจำบ้าน';}
-        if ($result['pro_glwa2']!=0) {$json['product']['categories'][] = 'ยาแผนโบราณ';}
-        if ($result['pro_glwa3']!=0) {$json['product']['categories'][] = 'อาหารเสริม';}
-        if ($result['pro_glwa4']!=0) {$json['product']['categories'][] = 'ยาอันตราย';}
-        if ($result['pro_glwa6']!=0) {$json['product']['categories'][] = 'ยาควบคุมพิเศษ';}
-        if ($result['pro_glwa7']!=0) {$json['product']['categories'][] = 'ยาตามใบสั่งแพทย์';}
-        if ($result['pro_glwa8']!=0) {$json['product']['categories'][] = 'ยาบรรจุเสร็จ';}
-        if ($result['pro_glwa9']!=0) {$json['product']['categories'][] = 'เครื่องมือแพทย์';}
-        if ($result['pro_glwa10']!=0) {$json['product']['categories'][] = 'เวชสำอาง';}
+          if ($result['pro_glwa1']!=0) {$json['product']['categories'][] = 'ยาสามัญประจำบ้าน';}
+          if ($result['pro_glwa2']!=0) {$json['product']['categories'][] = 'ยาแผนโบราณ';}
+          if ($result['pro_glwa3']!=0) {$json['product']['categories'][] = 'อาหารเสริม';}
+          if ($result['pro_glwa4']!=0) {$json['product']['categories'][] = 'ยาอันตราย';}
+          if ($result['pro_glwa6']!=0) {$json['product']['categories'][] = 'ยาควบคุมพิเศษ';}
+          if ($result['pro_glwa7']!=0) {$json['product']['categories'][] = 'ยาตามใบสั่งแพทย์';}
+          if ($result['pro_glwa8']!=0) {$json['product']['categories'][] = 'ยาบรรจุเสร็จ';}
+          if ($result['pro_glwa9']!=0) {$json['product']['categories'][] = 'เครื่องมือแพทย์';}
+          if ($result['pro_glwa10']!=0) {$json['product']['categories'][] = 'เวชสำอาง';}
 
           $pro_img = str_replace('../',$site,$result['pro_img']);
           if ($result['pro_img']!='') {$json['product']['image'][] = $pro_img;}
