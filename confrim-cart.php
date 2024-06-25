@@ -104,6 +104,7 @@
                   '".$spo_site."'
                 )
             ";
+
           mysqli_query($Con_wang,$in);
 
           if ($spo_discount==0) {$soh_listsale++;}
@@ -113,6 +114,44 @@
           $point_cart += ($spo_total*0.01);
         }
 
+        foreach ($arr['giftItemsSelected'] as $key => $value) {
+          $pro = mysqli_fetch_array(mysqli_query($Con_wang,"
+            SELECT * FROM `product` WHERE `pro_code`='".$value['productCode']."'
+          "));
+          $spo_ppu = ($pro['pro_priceTag']!=0)? $pro['pro_priceTag']:$pro['pro_priceC'];
+          $in = "
+            INSERT INTO 
+              `shopping_order`(
+                `spo_runing`,
+                `spo_memcode`,
+                `spo_procode`,
+                `spo_amount`,
+                `spo_unit`,
+                `spo_ppu`,
+                `spo_discount`,
+                `spo_total`,
+                `spo_Cdatetime`,
+                `spo_site`
+              ) VALUES (
+                '".$spo_runing."',
+                '".$spo_memcode."',
+                '".$value['productCode']."',
+                '".number_format($value['quantity'],2,'.','')."',
+                '1',
+                '".number_format($spo_ppu,2,'.','')."',
+                '100.00',
+                '0.00',
+                '".$spo_Cdatetime."',
+                'New-Web'
+              )
+          ";
+          mysqli_query($Con_wang,$in);
+          $soh_listfree++;
+          $point_free += ($_POST['point'][$key]*$value);
+
+          // echo 'productCode => '.$value['productCode'].' == '.$value['quantity'];
+        }
+        
         $inh = "
           INSERT INTO 
             `shopping_orderHead`(
@@ -151,23 +190,23 @@
             `mem_code`='".$spo_memcode."'
         ";
 
-        $jsonx = array(
-          'cart' => array(),
-          'discount' => 0,
-          '_id' => (int)$last_id,
-          'user_info' => array(),
-          'shippingOption' => $lg['lst_type'],    // บริษัท ขนส่งที่เลือก Flash | POST | BEST | DHL | Wang
-          'paymentMethod' => 'Cash',
-          'status' => 'Delivered',        // สถานะขนส่ง
-          'subTotal' => (int)number_format($soh_listsale+$soh_listfree,2,'.',''),            // มูลค่าสินค้า
-          'shippingCost' => (float)number_format($lg['lst_price'],2,'.',''),
-          'total' => (float)number_format($soh_sumprice,2,'.',''),        // มูลค่าสินค้า
-          'user' => $mem_RCoin['mem_code'],
-          'createdAt' => $spo_Cdatetime,
-          'updatedAt' => $spo_Cdatetime,
-          'invoice' => $spo_runing,
-          '__v' => 0,
-        );
+          $jsonx = array(
+            'cart' => array(),
+            'discount' => 0,
+            '_id' => (int)$last_id,
+            'user_info' => array(),
+            'shippingOption' => $lg['lst_type'],    // บริษัท ขนส่งที่เลือก Flash | POST | BEST | DHL | Wang
+            'paymentMethod' => 'Cash',
+            'status' => 'Delivered',        // สถานะขนส่ง
+            'subTotal' => (int)number_format($soh_listsale+$soh_listfree,2,'.',''),            // มูลค่าสินค้า
+            'shippingCost' => (float)number_format($lg['lst_price'],2,'.',''),
+            'total' => (float)number_format($soh_sumprice,2,'.',''),        // มูลค่าสินค้า
+            'user' => $mem_RCoin['mem_code'],
+            'createdAt' => $spo_Cdatetime,
+            'updatedAt' => $spo_Cdatetime,
+            'invoice' => $spo_runing,
+            '__v' => 0,
+          );
 
             $ic = "
               SELECT 

@@ -25,12 +25,27 @@
 
         $point = (int)($arr['cartTotal']*0.01);
 
+        $outputt = mysqli_fetch_array(mysqli_query($Con_wang,"
+          SELECT 
+             SUM(`a`.`spc_total`) AS `Price`
+          FROM 
+            `shopping_cart` AS `a` 
+            LEFT JOIN `product` AS `b` ON `a`.`spc_procode`=`b`.`pro_code`
+            LEFT JOIN `product_drugmode` AS `c` ON `b`.`pro_mode`=`c`.`pd_code`
+          WHERE 
+            `a`.`spc_memcode`='".$mem_code."' AND 
+            `a`.`spc_amount`!=0 AND 
+            `a`.`spc_check`='1'
+        "));
+        $point = (int)($outputt['Price']*0.01);
+
+
         $output = array(
           'giftProducts' => array(),
           'totalGiftPoints' => 0,
         );
 
-        if ($arr['cartTotal']>=2000) {
+        if ($outputt['Price']>=2000) {
           $sql = "
             SELECT 
               *,
@@ -225,7 +240,7 @@
             array_push($output['giftProducts'],$payload);
           }
 
-          $output['totalGiftPoints'] = (int)$totalGiftPoints;
+          $output['totalGiftPoints'] = (int)$point;
         }
         else {
           $output = array(
