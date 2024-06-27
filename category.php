@@ -42,7 +42,7 @@
                 'th' => $result['z1_name'],
                 'en' => $result['z1_nEng']
               ),
-              'parentId' => (String)strtotime(date('Y-m-d H:i:s')),
+              'parentId' => $result['z1_id'],
               'parentName' => $result['z1_name'],
               'description' => array(
                 'th' => $result['z1_name'],
@@ -77,7 +77,7 @@
                   'th' => $r2['z2_name'],
                   'en' => $r2['z2_nEng']
                 ),
-                'parentId' => (String)strtotime(date('Y-m-d H:i:s')),
+                'parentId' => $result['z2_id'],
                 'parentName' => $r2['z2_name'],
                 'description' => array(
                   'th' => $r2['z2_name'],
@@ -112,7 +112,7 @@
                     'th' => $r3['z3_name'],
                     'en' => $r3['z3_nEng']
                   ),
-                  'parentId' => (String)strtotime(date('Y-m-d H:i:s')),
+                  'parentId' => $result['z3_id'],
                   'parentName' => $r3['z3_name'],
                   'description' => array(
                     'th' => $r3['z3_name'],
