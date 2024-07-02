@@ -21,7 +21,7 @@
           FROM 
             `shopping_orderHead`
           WHERE 
-            1 
+            `soh_memcode`='".$spc_memcode."'
           ORDER BY 
             `soh_datetime` 
           DESC 

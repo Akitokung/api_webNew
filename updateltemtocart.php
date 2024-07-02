@@ -88,6 +88,8 @@
             `spc_procode`='".$arr['productCode']."' AND 
             `spc_unit`='".$spo_unit."'
           ");
+
+          
           /*
           $sql = mysqli_query($Con_wang,"
             DELETE FROM 
