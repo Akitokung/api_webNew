@@ -66,8 +66,9 @@
             $mem_amphur = ($result['mem_amphur']!='')? 'อำเภอ'.trim($result['mem_amphur']).' ':null;
             $mem_province = ($result['mem_province']!='')? 'จังหวัด'.trim($result['mem_province']).' ':null;
             $mem_post = ($result['mem_post']!='')? 'รหัสไปรษณีย์ '.trim($result['mem_post']):null;
+            $country = 'ประเทศไทย';
 
-            $address = $mem_address.$mem_village.$mem_alley.$mem_road.$mem_tumbon.$mem_amphur.$mem_province.$mem_post;
+            $address = $mem_address.$mem_village.$mem_alley.$mem_road.$mem_tumbon.$mem_amphur.$mem_province.$mem_post.$country;
 
             $json = array(
               'token' => $jwt,
@@ -76,6 +77,10 @@
               'contact' => $result['mn_phoneshop'],
               'email' => $result['mn_emailshop'],
               'address' => $address,
+              'country' => $country,
+              'city' => ($result['mem_province']!='')? trim($result['mem_province']):null,
+              'zipCode' => ($result['mem_post']!='')? trim($result['mem_post']):null, 
+
               'phone' => $result['mn_phoneshop'],
 
               'img' => $img,
@@ -96,6 +101,9 @@
               'contact' => null,
               'email' => null,
               'address' => null,
+              'country' => null,
+              'city' => null,
+              'zipCode' => null,
               'phone' => null,
 
               'img' => null,
@@ -117,6 +125,9 @@
               'contact' => null,
               'email' => null,
               'address' => null,
+              'country' => null,
+              'city' => null,
+              'zipCode' => null,
               'phone' => null,
 
               'img' => null,
@@ -138,6 +149,9 @@
               'contact' => null,
               'email' => null,
               'address' => null,
+              'country' => null,
+              'city' => null,
+              'zipCode' => null,
               'phone' => null,
 
               'img' => null,
@@ -159,6 +173,9 @@
               'contact' => null,
               'email' => null,
               'address' => null,
+              'country' => null,
+              'city' => null,
+              'zipCode' => null,
               'phone' => null,
 
               'img' => null,

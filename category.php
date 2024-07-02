@@ -34,15 +34,15 @@
           $query = mysqli_query($Con_wang,$sql);
           if (!$query) {http_response_code(404);}     $json = array();
           while($result = mysqli_fetch_array($query,MYSQLI_ASSOC)) {
-            $icon = ($result['z1_icon']!='')? 'https://www.wangpharma.com/Akitokung/images/category/'.$result['z1_icon']:'https://www.wangpharma.com/Akitokung/images/logo-big.png';
+            $icon = ($result['z1_icon']!='')? 'https://www.wangpharma.com/Akitokung/'.$result['z1_icon']:'https://www.wangpharma.com/Akitokung/images/logo-big.png';
 
             $children = array(
-              '_id' => 1,
+              '_id' => $result['z1_id'],
               'name' => array(
                 'th' => $result['z1_name'],
                 'en' => $result['z1_nEng']
               ),
-              'parentId' => $result['z1_id'],
+              'parentId' => 1,
               'parentName' => $result['z1_name'],
               'description' => array(
                 'th' => $result['z1_name'],
@@ -69,15 +69,15 @@
             // echo $m2;
             $qm2 = mysqli_query($Con_wang,$m2);
             while($r2 = mysqli_fetch_array($qm2,MYSQLI_ASSOC)) {
-              $icon = ($r2['z2_icon']!='')? 'https://www.wangpharma.com/Akitokung/images/category/'.$r2['z2_icon']:'https://www.wangpharma.com/Akitokung/images/logo-big.png';
+              $icon = ($r2['z2_icon']!='')? 'https://www.wangpharma.com/Akitokung/'.$r2['z2_icon']:'https://www.wangpharma.com/Akitokung/images/logo-big.png';
 
               $child = array(
-                '_id' => 2,
+                '_id' => $result['z2_id'],
                 'name' => array(
                   'th' => $r2['z2_name'],
                   'en' => $r2['z2_nEng']
                 ),
-                'parentId' => $result['z2_id'],
+                'parentId' => 2,
                 'parentName' => $r2['z2_name'],
                 'description' => array(
                   'th' => $r2['z2_name'],
@@ -105,14 +105,14 @@
               // echo $m3;
               $qm3 = mysqli_query($Con_wang,$m3);
               while($r3 = mysqli_fetch_array($qm3,MYSQLI_ASSOC)) {
-                $icon = ($r3['z3_icon']!='')? 'https://www.wangpharma.com/Akitokung/images/category/'.$r3['z3_icon']:'https://www.wangpharma.com/Akitokung/images/logo-big.png';
+                $icon = ($r3['z3_icon']!='')? 'https://www.wangpharma.com/Akitokung/'.$r3['z3_icon']:'https://www.wangpharma.com/Akitokung/images/logo-big.png';
                 $child_3 = array(
-                  '_id' => 3,
+                  '_id' => $result['z3_id'],
                   'name' => array(
                     'th' => $r3['z3_name'],
                     'en' => $r3['z3_nEng']
                   ),
-                  'parentId' => $result['z3_id'],
+                  'parentId' => 3,
                   'parentName' => $r3['z3_name'],
                   'description' => array(
                     'th' => $r3['z3_name'],

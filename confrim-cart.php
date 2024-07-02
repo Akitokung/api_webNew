@@ -44,8 +44,15 @@
         $spo_runing = '004-'.$order_id;   // หมายเลขคำสั่งจอง
         $spo_Cdatetime = date('Y-m-d H:i:s');
         $spo_site = 'Next';
-        $ship = 1;      // ตั้งค่าเริ่มต้น  แบบร้านวังส่งให้
-        $pay = 1;       // ตั้งค่าเริ่มต้น  แบบเครดิต
+
+        $s = $arr['shippingOption'];
+        $ss = mysqli_fetch_array(mysqli_query($Con_wang,"SELECT * FROM `logintsc_shipping_type` WHERE `lst_type`='".$s."'"));
+
+        $ship = $ss['lst_id'];      // ตั้งค่าเริ่มต้น  แบบร้านวังส่งให้
+
+        $p = $arr['paymentMethod'];
+        $pp = mysqli_fetch_array(mysqli_query($Con_wang,"SELECT * FROM `shopping_paytype` WHERE `spt_type`='".$p."'"));
+        $pay = $pp['spt_id'];       // ตั้งค่าเริ่มต้น  แบบเครดิต
 
         $lg = mysqli_fetch_array(mysqli_query($Con_wang,"
           SELECT * FROM `logintsc_shipping_type` WHERE `lst_id`='".$ship."'
