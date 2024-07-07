@@ -72,12 +72,12 @@
               $icon = ($r2['z2_icon']!='')? 'https://www.wangpharma.com/Akitokung/'.$r2['z2_icon']:'https://www.wangpharma.com/Akitokung/images/logo-big.png';
 
               $child = array(
-                '_id' => $result['z2_id'],
+                '_id' => $r2['z2_id'],
                 'name' => array(
                   'th' => $r2['z2_name'],
                   'en' => $r2['z2_nEng']
                 ),
-                'parentId' => 2,
+                'parentId' => $result['z1_code'],
                 'parentName' => $r2['z2_name'],
                 'description' => array(
                   'th' => $r2['z2_name'],

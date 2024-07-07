@@ -32,7 +32,9 @@
       while($result = mysqli_fetch_array($query,MYSQLI_ASSOC)) {
         $payload2 = array(
           '_id' => $result['spt_id'],
-          'name' => $result['spt_type']
+          'name' => $result['spt_type'],
+          'value' => $result['spt_eng'],
+          'icon' => $result['spt_icon'],
         );
         array_push($payload['paymentMethod'],$payload2);
       }
